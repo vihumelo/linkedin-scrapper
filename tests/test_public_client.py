@@ -1,4 +1,4 @@
-"""Testes offline do cliente HTTP público do LinkedIn."""
+"""Offline tests for the public LinkedIn HTTP client."""
 
 import asyncio
 
@@ -10,7 +10,7 @@ from app.clients.public_client import PublicLinkedInClient, PublicServiceUnavail
 
 @pytest.mark.parametrize("job_id", ["١٢٣", "１２３"])
 def test_public_client_rejects_unicode_decimal_id(job_id: str) -> None:
-    """Rejeita IDs não ASCII antes de enviar uma requisição HTTP."""
+    """Rejects non-ASCII IDs before sending an HTTP request."""
 
     def fail_if_called(request: httpx.Request) -> httpx.Response:
         pytest.fail(f"Não deveria enviar uma requisição para {request.url}.")
@@ -25,7 +25,7 @@ def test_public_client_rejects_unicode_decimal_id(job_id: str) -> None:
 
 
 def test_public_client_logs_upstream_status_and_duration(caplog) -> None:
-    """Registra status e duração da origem ao receber uma resposta de erro."""
+    """Logs the origin status and duration when an error response is received."""
 
     def return_rate_limit(request: httpx.Request) -> httpx.Response:
         return httpx.Response(429, headers={"content-type": "text/html"}, request=request)

@@ -1,4 +1,4 @@
-"""Testes da seleção de adapter de cache pela configuração."""
+"""Tests for selecting a cache adapter from configuration."""
 
 from pathlib import Path
 
@@ -10,7 +10,7 @@ from app.core.dependencies import create_job_cache
 
 
 def test_creates_sqlite_adapter_with_configured_path(tmp_path: Path) -> None:
-    """Seleciona SQLite e repassa o caminho configurado sem fixá-lo no adapter."""
+    """Selects SQLite and passes the configured path without hardcoding it in the adapter."""
 
     database_path = tmp_path / "custom" / "cache.db"
     settings = Settings(cache_backend="sqlite", cache_sqlite_path=database_path)
@@ -22,7 +22,7 @@ def test_creates_sqlite_adapter_with_configured_path(tmp_path: Path) -> None:
 
 
 def test_rejects_unknown_cache_backend() -> None:
-    """Falha explicitamente quando a configuração seleciona um adapter inexistente."""
+    """Fails explicitly when the configuration selects a nonexistent adapter."""
 
     settings = Settings(cache_backend="redis")
 

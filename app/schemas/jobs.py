@@ -1,4 +1,4 @@
-"""Modelos Pydantic para busca e resposta de vagas."""
+"""Pydantic models for job searches and responses."""
 
 from typing import Literal
 
@@ -6,7 +6,7 @@ from pydantic import BaseModel, ConfigDict
 
 
 class JobQuery(BaseModel):
-    """Parâmetros efetivamente utilizados na busca de vagas."""
+    """Parameters actually used in the job search."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -15,7 +15,7 @@ class JobQuery(BaseModel):
 
 
 class JobPagination(BaseModel):
-    """Informações conhecidas sobre a página de resultados."""
+    """Known information about the results page."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -26,7 +26,7 @@ class JobPagination(BaseModel):
 
 
 class JobListing(BaseModel):
-    """Vaga extraída da página de resultados do LinkedIn."""
+    """Job extracted from the LinkedIn results page."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -38,7 +38,7 @@ class JobListing(BaseModel):
 
 
 class JobSearchResponse(BaseModel):
-    """Resposta estruturada da busca de vagas."""
+    """Structured response for a job search."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -48,7 +48,7 @@ class JobSearchResponse(BaseModel):
 
 
 class JobDetail(JobListing):
-    """Dados adicionais extraídos da página pública de uma vaga."""
+    """Additional data extracted from a public job page."""
 
     posted_text: str | None = None
     seniority_level: str | None = None
@@ -59,7 +59,7 @@ class JobDetail(JobListing):
 
 
 class JobDetailResponse(BaseModel):
-    """Resposta estruturada do endpoint público de detalhes da vaga."""
+    """Structured response from the public job details endpoint."""
 
     model_config = ConfigDict(extra="forbid")
 

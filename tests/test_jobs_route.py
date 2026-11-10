@@ -1,4 +1,4 @@
-"""Testes do endpoint HTTP de busca de vagas."""
+"""Tests for the job search HTTP endpoint."""
 
 from fastapi.testclient import TestClient
 
@@ -7,10 +7,10 @@ from app.main import create_app
 
 
 class FakeAuthenticatedLinkedInClient:
-    """Cliente falso com uma página de resultados estática."""
+    """Fake client with a static results page."""
 
     async def search_jobs(self, keywords: str, geo_id: str, start: int) -> str:
-        """Retorna um cartão e um controle acessível de próxima página."""
+        """Returns a card and an accessible next-page control."""
 
         assert (keywords, geo_id, start) == ("biomedicina", "106057199", 0)
         return """
@@ -23,7 +23,7 @@ class FakeAuthenticatedLinkedInClient:
 
 
 def test_search_jobs_response_contract() -> None:
-    """Retorna consulta, paginação e vagas sem expor HTML."""
+    """Returns the query, pagination, and jobs without exposing HTML."""
 
     fake_client = FakeAuthenticatedLinkedInClient()
     app = create_app()
@@ -46,7 +46,7 @@ def test_search_jobs_response_contract() -> None:
 
 
 def test_search_jobs_rejects_negative_start() -> None:
-    """Valida que o offset de paginação seja não negativo."""
+    """Validates that the pagination offset is non-negative."""
 
     app = create_app()
     app.dependency_overrides[get_authenticated_linkedin_client] = lambda: (

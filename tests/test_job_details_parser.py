@@ -1,4 +1,4 @@
-"""Testes do parser de detalhes baseado em um trecho HTML real do LinkedIn."""
+"""Tests for the details parser based on a real LinkedIn HTML snippet."""
 
 from pathlib import Path
 
@@ -13,7 +13,7 @@ FIXTURE_PATH = Path(__file__).parent / "fixtures" / "linkedin_job_detail.html"
 
 
 def test_parse_real_job_detail_html() -> None:
-    """Extrai campos e critérios do HTML real preservado como fixture."""
+    """Extracts fields and criteria from real HTML preserved as a fixture."""
 
     html = FIXTURE_PATH.read_text(encoding="utf-8")
     job = parse_job_detail_html(html, "4486249045")
@@ -32,7 +32,7 @@ def test_parse_real_job_detail_html() -> None:
 
 
 def test_rejects_partial_markup_with_only_posted_time() -> None:
-    """Rejeita markup parcial que não contém nenhum campo central da vaga."""
+    """Rejects partial markup that contains none of the job’s core fields."""
 
     html = '<span class="posted-time-ago__text">Há 4 dias</span>'
 
@@ -41,7 +41,7 @@ def test_rejects_partial_markup_with_only_posted_time() -> None:
 
 
 def test_accepts_recognized_job_with_optional_fields_missing() -> None:
-    """Mantém campos opcionais nulos quando a página contém um título válido."""
+    """Keeps optional fields null when the page contains a valid title."""
 
     html = '<h2 class="topcard__title">Vaga reconhecida</h2>'
 

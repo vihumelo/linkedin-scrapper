@@ -1,4 +1,4 @@
-"""Testes de política do cache no serviço de detalhes da vaga."""
+"""Tests for the cache policy in the job details service."""
 
 import asyncio
 
@@ -18,7 +18,7 @@ INCOMPLETE_JOB_HTML = '<h2 class="topcard__title">Vaga sem detalhes suficientes<
 
 
 def make_job(**overrides: str | None) -> JobDetail:
-    """Monta uma vaga completa para os testes do serviço."""
+    """Builds a complete job for service tests."""
 
     fields: dict[str, str | None] = {
         "id": JOB_ID,
@@ -33,21 +33,21 @@ def make_job(**overrides: str | None) -> JobDetail:
 
 
 class FakePublicClient:
-    """Cliente público falso que conta as consultas ao LinkedIn."""
+    """Fake public client that counts LinkedIn requests."""
 
     def __init__(self, html: str = COMPLETE_JOB_HTML) -> None:
         self.html = html
         self.requested_ids: list[str] = []
 
     async def get_job_details_html(self, job_id: str) -> str:
-        """Retorna HTML estático e registra o ID consultado."""
+        """Returns static HTML and records the queried ID."""
 
         self.requested_ids.append(job_id)
         return self.html
 
 
 class FakeJobCache:
-    """Cache falso com falhas controladas para testar a política do serviço."""
+    """Fake cache with controlled failures for testing the service policy."""
 
     def __init__(self, cached_job: JobDetail | None = None) -> None:
         self.cached_job = cached_job
@@ -57,7 +57,7 @@ class FakeJobCache:
         self.saved_jobs: list[JobDetail] = []
 
     async def get(self, job_id: str) -> JobDetail | None:
-        """Retorna o valor configurado ou simula falha de leitura."""
+        """Returns the configured value or simulates a read failure."""
 
         self.get_calls.append(job_id)
         if self.get_error:
@@ -65,21 +65,21 @@ class FakeJobCache:
         return self.cached_job
 
     async def save(self, job: JobDetail) -> None:
-        """Registra a vaga ou simula falha de gravação."""
+        """Records the job or simulates a write failure."""
 
         if self.save_error:
             raise self.save_error
         self.saved_jobs.append(job)
 
     async def delete(self, job_id: str) -> None:
-        """Remove a vaga falsa quando o ID armazenado corresponde."""
+        """Removes the fake job when its stored ID matches."""
 
         if self.cached_job and self.cached_job.id == job_id:
             self.cached_job = None
 
 
 def test_returns_cached_job_without_calling_linkedin() -> None:
-    """Retorna o detalhe armazenado e evita a consulta externa quando há cache hit."""
+    """Returns the stored details and avoids an external request on a cache hit."""
 
     client = FakePublicClient()
     cache = FakeJobCache(make_job())
@@ -91,7 +91,7 @@ def test_returns_cached_job_without_calling_linkedin() -> None:
 
 
 def test_fetches_and_caches_complete_job_on_cache_miss() -> None:
-    """Consulta o LinkedIn e grava os detalhes completos quando não há cache."""
+    """Queries LinkedIn and stores complete details when the cache is empty."""
 
     client = FakePublicClient()
     cache = FakeJobCache()
@@ -104,7 +104,7 @@ def test_fetches_and_caches_complete_job_on_cache_miss() -> None:
 
 
 def test_cache_read_failure_falls_back_to_linkedin() -> None:
-    """Busca a vaga no LinkedIn quando a leitura do cache falha."""
+    """Fetches the job from LinkedIn when reading the cache fails."""
 
     client = FakePublicClient()
     cache = FakeJobCache()
@@ -118,7 +118,7 @@ def test_cache_read_failure_falls_back_to_linkedin() -> None:
 
 
 def test_incomplete_cached_job_falls_back_to_linkedin() -> None:
-    """Não retorna registros incompletos que já existam no banco."""
+    """Does not return incomplete records already present in the database."""
 
     client = FakePublicClient()
     cache = FakeJobCache(make_job(description_text=None))
@@ -131,7 +131,7 @@ def test_incomplete_cached_job_falls_back_to_linkedin() -> None:
 
 
 def test_cache_write_failure_does_not_discard_linkedin_response() -> None:
-    """Retorna os detalhes do LinkedIn mesmo quando não é possível gravar no cache."""
+    """Returns LinkedIn details even when they cannot be written to the cache."""
 
     client = FakePublicClient()
     cache = FakeJobCache()
@@ -144,7 +144,7 @@ def test_cache_write_failure_does_not_discard_linkedin_response() -> None:
 
 
 def test_does_not_cache_title_only_job() -> None:
-    """Não grava a vaga se faltar qualquer campo obrigatório para o cache."""
+    """Does not cache the job if any required cache field is missing."""
 
     client = FakePublicClient(INCOMPLETE_JOB_HTML)
     cache = FakeJobCache()
@@ -156,7 +156,7 @@ def test_does_not_cache_title_only_job() -> None:
 
 
 def test_refresh_skips_cache_read_and_saves_updated_job() -> None:
-    """Ignora o cache atual e atualiza o registro após buscar a vaga."""
+    """Bypasses the current cache entry and updates it after fetching the job."""
 
     client = FakePublicClient()
     cache = FakeJobCache(make_job(title="Título antigo"))
@@ -183,7 +183,7 @@ def test_does_not_cache_job_missing_a_required_field(
     missing_value: str | None,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Não grava a vaga se faltar qualquer campo obrigatório para o cache."""
+    """Does not cache the job if any required cache field is missing."""
 
     job = make_job(**{required_field: missing_value})
     cache = FakeJobCache()

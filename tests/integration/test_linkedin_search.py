@@ -1,6 +1,6 @@
-"""Teste online opcional da integração real com o LinkedIn.
+"""Optional online test for the real LinkedIn integration.
 
-Para executá-lo explicitamente:
+Run it explicitly with:
     RUN_LINKEDIN_INTEGRATION=1 .venv/bin/python -m pytest tests/integration/test_linkedin_search.py
 """
 
@@ -22,7 +22,7 @@ from app.services.job_search import JobSearchService
     reason="teste online desativado; habilite-o explicitamente com RUN_LINKEDIN_INTEGRATION=1",
 )
 def test_linkedin_search_integration() -> None:
-    """Consulta vagas reais e valida o contrato essencial da resposta integrada."""
+    """Queries real jobs and validates the essential integrated response contract."""
 
     settings = Settings()
     if not settings.linkedin_li_at or not settings.linkedin_jsessionid:

@@ -1,4 +1,4 @@
-"""Construção e acesso às dependências compartilhadas da aplicação."""
+"""Construction and access to shared application dependencies."""
 
 from fastapi import Request
 
@@ -10,7 +10,7 @@ from app.ports.job_cache import JobCache
 
 
 def create_job_cache(settings: Settings) -> JobCache:
-    """Seleciona e instancia o adapter de cache configurado."""
+    """Selects and instantiates the configured cache adapter."""
 
     backend = settings.cache_backend.casefold().strip()
     if backend == "sqlite":
@@ -19,18 +19,18 @@ def create_job_cache(settings: Settings) -> JobCache:
 
 
 def get_job_cache(request: Request) -> JobCache:
-    """Obtém o cache compartilhado criado durante o ciclo de vida da aplicação."""
+    """Returns the shared cache created during the application lifecycle."""
 
     return request.app.state.job_cache
 
 
 def get_authenticated_linkedin_client(request: Request) -> AuthenticatedLinkedInClient:
-    """Obtém a sessão autenticada compartilhada criada no ciclo de vida da aplicação."""
+    """Returns the shared authenticated session created during the application lifecycle."""
 
     return request.app.state.authenticated_linkedin_client
 
 
 def get_public_linkedin_client(request: Request) -> PublicLinkedInClient:
-    """Obtém a sessão pública compartilhada criada no ciclo de vida da aplicação."""
+    """Returns the shared public session created during the application lifecycle."""
 
     return request.app.state.public_linkedin_client

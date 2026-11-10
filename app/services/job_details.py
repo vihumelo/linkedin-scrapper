@@ -1,4 +1,4 @@
-"""Orquestra cache, consulta pública e extração dos detalhes da vaga."""
+"""Orchestrates caching, public requests, and job detail extraction."""
 
 import logging
 
@@ -11,16 +11,16 @@ logger = logging.getLogger(__name__)
 
 
 class JobDetailService:
-    """Coordena a consulta pública, o parsing e a montagem da resposta."""
+    """Coordinates the public request, parsing, and response construction."""
 
     def __init__(self, public_client: PublicLinkedInClient, cache: JobCache) -> None:
-        """Armazena o cliente público e a porta de cache injetados."""
+        """Stores the injected public client and cache port."""
 
         self._public_client = public_client
         self._cache = cache
 
     async def get_job(self, job_id: str, refresh: bool = False) -> JobDetailResponse:
-        """Consulta cache ou LinkedIn e armazena detalhes completos quando possível."""
+        """Reads from the cache or LinkedIn and stores complete details when possible."""
 
         if not refresh:
             try:
@@ -78,7 +78,7 @@ class JobDetailService:
 
 
 def _is_cacheable(job: JobDetail) -> bool:
-    """Verifica se os campos mínimos acordados estão preenchidos para persistência."""
+    """Checks whether the required fields are populated before persisting a job."""
 
     required_fields = ("id", "title", "company", "url", "description_text")
     for field in required_fields:

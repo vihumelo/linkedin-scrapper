@@ -1,7 +1,7 @@
-"""Teste online opcional da rota pública de detalhes de uma vaga.
+"""Optional online test for the public job details route.
 
-Para executá-lo explicitamente:
-    RUN_LINKEDIN_JOB_DETAILS_INTEGRATION=1 .venv/bin/python -m pytest \
+Run it explicitly with:
+    RUN_LINKEDIN_JOB_DETAILS_INTEGRATION=1 .venv/bin/python -m pytest \\
         tests/integration/test_linkedin_job_details.py
 """
 
@@ -23,7 +23,7 @@ JOB_ID = "4486249045"
     ),
 )
 def test_job_details_route_with_live_linkedin_response() -> None:
-    """Consulta a rota local e valida os detalhes retornados pelo LinkedIn real."""
+    """Queries the local route and validates the details returned by real LinkedIn."""
 
     app = create_app()
     with TestClient(app) as client:

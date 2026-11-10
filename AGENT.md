@@ -1,10 +1,10 @@
 # AGENT.md
 
-## 1. Arquitetura
+## 1. Architecture
 
-O projeto será uma **REST API desenvolvida em Python com FastAPI**, seguindo uma arquitetura modular e separação de responsabilidades.
+This project is a **REST API built with Python and FastAPI**, following a modular architecture with clear separation of responsibilities.
 
-Estrutura de referência:
+Reference structure:
 
 ```text
 project/
@@ -26,45 +26,45 @@ project/
 ├── AGENT.md
 ```
 
-**Responsabilidades:**
-- `api/routes/`: endpoints HTTP e validação de parâmetros.
-- `clients/`: comunicação com serviços externos.
-- `services/`: regras de negócio e orquestração.
-- `parsers/`: extração e transformação de dados.
-- `schemas/`: modelos Pydantic de entrada e saída.
-- `core/`: configurações e componentes compartilhados.
-- `tests/`: testes automatizados com pytest.
+**Responsibilities:**
+- `api/routes/`: HTTP endpoints and parameter validation.
+- `clients/`: communication with external services.
+- `services/`: business rules and orchestration.
+- `parsers/`: data extraction and transformation.
+- `schemas/`: Pydantic input and output models.
+- `core/`: settings and shared components.
+- `tests/`: automated tests using pytest.
 
-Evitar lógica de negócio diretamente nas rotas.
+Keep business logic out of route handlers.
 
-## 2. Padrões de código
+## 2. Code standards
 
-- Utilizar **Python 3.12+**.
-- Aplicar **type hints** em todas as funções, métodos, parâmetros e retornos.
-- Utilizar **docstrings em português brasileiro (pt-BR)** para módulos, classes e funções públicas.
-- Manter nomes de variáveis, funções, classes e arquivos em inglês, seguindo PEP 8.
-- Preferir funções pequenas, coesas e com responsabilidade única.
-- Utilizar Pydantic v2 para contratos e validação de dados.
-- Utilizar `async/await` para operações de I/O assíncronas.
-- Utilizar `logging` em vez de `print`.
-- Tratar erros explicitamente, sem suprimir exceções silenciosamente.
-- Criar testes com pytest para funcionalidades e correções relevantes.
+- Use **Python 3.12+**.
+- Add **type hints** to all functions, methods, parameters, and return values.
+- Write **docstrings in US English** for public modules, classes, and functions.
+- Keep variable, function, class, and file names in English, following PEP 8.
+- Prefer small, cohesive functions with a single responsibility.
+- Use Pydantic v2 for contracts and data validation.
+- Use `async/await` for asynchronous I/O operations.
+- Use `logging` instead of `print`.
+- Handle errors explicitly; do not silently suppress exceptions.
+- Add pytest tests for relevant features and fixes.
 
 ## 3. FastAPI
 
-- Utilizar `APIRouter` para organizar endpoints.
-- Utilizar injeção de dependências com `Depends` quando apropriado.
-- Declarar `response_model` nas rotas.
-- Retornar códigos HTTP adequados.
-- Padronizar respostas de erro em JSON.
-- Disponibilizar documentação automática em `/docs` e `/openapi.json`.
-- Manter a API acessível em `127.0.0.1` por padrão.
+- Use `APIRouter` to organize endpoints.
+- Use dependency injection with `Depends` where appropriate.
+- Declare a `response_model` on routes.
+- Return appropriate HTTP status codes.
+- Standardize error responses as JSON.
+- Provide automatic documentation at `/docs` and `/openapi.json`.
+- Keep the API bound to `127.0.0.1` by default.
 
-## 4. Configuração e variáveis de ambiente
+## 4. Environment settings
 
-Centralizar as configurações em `app/core/config.py`, utilizando `pydantic-settings`.
+Centralize settings in `app/core/config.py` using `pydantic-settings`.
 
-Criar `.env.example` com as seguintes variáveis:
+Create `.env.example` with the following variables:
 
 ```dotenv
 # LinkedIn
@@ -80,18 +80,18 @@ CACHE_BACKEND=sqlite
 CACHE_SQLITE_PATH=./data/jobs_cache.db
 ```
 
-Regras:
-- Criar `.env` a partir de `.env.example`, preservando configurações existentes.
-- Nunca inventar credenciais ou inserir valores reais no código.
-- Nunca versionar `.env` ou registrar tokens e cookies em logs.
-- Versionar somente `.env.example`, sem segredos.
-- Validar configurações obrigatórias na inicialização ou antes de utilizar a integração correspondente.
+Rules:
+- Create `.env` from `.env.example`, preserving existing settings.
+- Never invent credentials or add real values to the code.
+- Never commit `.env` or log tokens and cookies.
+- Commit only `.env.example`, with no secrets.
+- Validate required settings at startup or before using the corresponding integration.
 
-## 5. Qualidade e manutenção
+## 5. Quality and maintenance
 
-- Priorizar simplicidade, legibilidade e manutenção.
-- Evitar abstrações prematuras e dependências desnecessárias.
-- Manter módulos desacoplados e testáveis.
-- Não misturar comunicação HTTP, parsing e regras de negócio.
-- Utilizar `ruff` para lint e formatação.
-- Garantir que alterações não quebrem contratos públicos nem testes existentes.
+- Prioritize simplicity, readability, and maintainability.
+- Avoid premature abstractions and unnecessary dependencies.
+- Keep modules loosely coupled and testable.
+- Do not mix HTTP communication, parsing, and business rules.
+- Use `ruff` for linting and formatting.
+- Ensure changes do not break public contracts or existing tests.

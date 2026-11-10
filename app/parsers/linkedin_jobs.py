@@ -1,4 +1,4 @@
-"""Extração de vagas e paginação do HTML do LinkedIn."""
+"""Extracts jobs and pagination data from LinkedIn HTML."""
 
 import re
 from collections.abc import Iterable
@@ -41,11 +41,11 @@ POSTED_TEXT_PATTERN = re.compile(
 
 
 class HTMLStructureError(ValueError):
-    """Indica que a página não contém uma estrutura de resultados reconhecida."""
+    """Indicates that the page does not contain a recognized results structure."""
 
 
 def parse_job_search_html(html: str, start: int) -> tuple[list[JobListing], bool | None]:
-    """Extrai vagas únicas e a indicação de próxima página, quando identificável."""
+    """Extracts unique jobs and the next-page indicator when it can be determined."""
 
     soup = BeautifulSoup(html, "lxml")
     cards = _find_job_cards(soup)
@@ -64,7 +64,7 @@ def parse_job_search_html(html: str, start: int) -> tuple[list[JobListing], bool
 
 
 def _find_job_cards(soup: BeautifulSoup) -> list[tuple[str, Tag]]:
-    """Localiza cartões pelos identificadores semânticos presentes no HTML."""
+    """Finds job cards using semantic identifiers present in the HTML."""
 
     cards: list[tuple[str, Tag]] = []
     seen_ids: set[str] = set()
@@ -88,7 +88,7 @@ def _find_job_cards(soup: BeautifulSoup) -> list[tuple[str, Tag]]:
 
 
 def _parse_job_card(job_id: str, card: Tag) -> JobListing:
-    """Extrai campos do cartão após validar a marcação do título."""
+    """Extracts card fields after validating the title markup."""
 
     paragraphs = card.find_all("p")
     first_paragraph_index = next(
@@ -134,7 +134,7 @@ def _parse_job_card(job_id: str, card: Tag) -> JobListing:
 
 
 def _is_job_card_metadata(value: str) -> bool:
-    """Identifica alguns status conhecidos que não são campos da vaga."""
+    """Identifies known status messages that are not job fields."""
 
     normalized = value.casefold().strip()
     return (
@@ -145,13 +145,13 @@ def _is_job_card_metadata(value: str) -> bool:
 
 
 def _text_values(elements: Iterable[Tag]) -> list[str]:
-    """Retorna os textos não vazios de uma sequência de elementos."""
+    """Returns the non-empty text values from a sequence of elements."""
 
     return [value for element in elements if (value := _text_value(element)) is not None]
 
 
 def _text_value(element: Tag | None) -> str | None:
-    """Obtém o texto visível sem alterar seu conteúdo, além de aparar espaços externos."""
+    """Gets visible text and trims surrounding whitespace without changing its content."""
 
     if element is None:
         return None
@@ -160,7 +160,7 @@ def _text_value(element: Tag | None) -> str | None:
 
 
 def _find_semantic_location(card: Tag) -> str | None:
-    """Procura um elemento cujo atributo semântico identifique a localização."""
+    """Finds an element whose semantic attribute identifies the location."""
 
     for element in card.find_all(["span", "div"], attrs={"data-testid": True}):
         test_id = str(element.get("data-testid", ""))
@@ -180,14 +180,14 @@ def _find_semantic_location(card: Tag) -> str | None:
 
 
 def _has_explicit_empty_state(soup: BeautifulSoup) -> bool:
-    """Distingue uma busca sem resultados de uma página HTML inesperada."""
+    """Distinguishes a search with no results from an unexpected HTML page."""
 
     text = soup.get_text(" ", strip=True)
     return bool(EMPTY_RESULTS_PATTERN.search(text))
 
 
 def _find_has_next(soup: BeautifulSoup, start: int) -> bool | None:
-    """Determina a página seguinte pelos indicadores ou controles de paginação."""
+    """Determines whether another page exists from pagination indicators or controls."""
 
     roots = _find_pagination_roots(soup)
     states = [state for root in roots if (state := _page_indicator_state(root)) is not None]
@@ -205,7 +205,7 @@ def _find_has_next(soup: BeautifulSoup, start: int) -> bool | None:
 
 
 def _find_pagination_roots(soup: BeautifulSoup) -> list[Tag]:
-    """Localiza contêineres de paginação por atributos acessíveis ou semânticos."""
+    """Finds pagination containers by accessible or semantic attributes."""
 
     roots = soup.select('[data-testid="pagination-controls-list"]')
     if roots:
@@ -220,7 +220,7 @@ def _find_pagination_roots(soup: BeautifulSoup) -> list[Tag]:
 
 
 def _page_indicator_state(root: Tag) -> bool | None:
-    """Compara a página ativa com a última página exibida no controle."""
+    """Compares the active page with the last page shown in the control."""
 
     indicators = root.select('[data-testid^="pagination-indicator-"]')
     if not indicators:
@@ -253,7 +253,7 @@ def _page_indicator_state(root: Tag) -> bool | None:
 
 
 def _page_number(indicator: Tag) -> int | None:
-    """Extrai o número da página do rótulo, texto ou índice do indicador."""
+    """Extracts the page number from the indicator label, text, or index."""
 
     for attribute in ("aria-label", "title"):
         label = str(indicator.get(attribute, ""))
@@ -271,7 +271,7 @@ def _page_number(indicator: Tag) -> int | None:
 
 
 def _find_next_control_state(root: Tag, start: int) -> bool | None:
-    """Lê controles com rótulos ou offsets apenas dentro da paginação."""
+    """Reads controls with labels or offsets only within the pagination area."""
 
     saw_disabled_next = False
     for control in root.find_all(["a", "button"]):
@@ -304,7 +304,7 @@ def _find_next_control_state(root: Tag, start: int) -> bool | None:
 
 
 def _has_rel_next(soup: BeautifulSoup) -> bool:
-    """Reconhece um link explicitamente marcado como próximo pela semântica HTML."""
+    """Recognizes a link explicitly marked as next by its HTML semantics."""
 
     for link in soup.find_all("a", attrs={"rel": True}):
         rel = link.get("rel", [])
