@@ -1,4 +1,4 @@
-"""Testes offline do endpoint HTTP de detalhes da vaga."""
+"""Offline tests for the job details HTTP endpoint."""
 
 from pathlib import Path
 
@@ -13,44 +13,44 @@ FIXTURE_PATH = Path(__file__).parent / "fixtures" / "linkedin_job_detail.html"
 
 
 class FakePublicLinkedInClient:
-    """Cliente falso que retorna o HTML real preservado para teste."""
+    """Fake client that returns the real HTML preserved for testing."""
 
     async def get_job_details_html(self, job_id: str) -> str:
-        """Retorna o HTML de referência sem realizar uma chamada externa."""
+        """Returns the reference HTML without making an external request."""
 
         return FIXTURE_PATH.read_text(encoding="utf-8")
 
 
 class FakeJobCache:
-    """Cache falso vazio para manter os testes da rota offline."""
+    """Empty fake cache that keeps route tests offline."""
 
     def __init__(self, cached_job: JobDetail | None = None) -> None:
-        """Configura o registro retornado pelo cache e prepara o histórico."""
+        """Configures the record returned by the cache and prepares its history."""
 
         self.cached_job = cached_job
         self.get_calls: list[str] = []
         self.saved_jobs: list[JobDetail] = []
 
     async def get(self, job_id: str) -> JobDetail | None:
-        """Simula ausência da vaga no cache."""
+        """Simulates a cache miss for the job."""
 
         self.get_calls.append(job_id)
         return self.cached_job
 
     async def save(self, job: JobDetail) -> None:
-        """Aceita a gravação sem persistir dados de teste."""
+        """Accepts the write without persisting test data."""
 
         self.saved_jobs.append(job)
 
     async def delete(self, job_id: str) -> None:
-        """Implementa a operação exigida pelo contrato de cache."""
+        """Implements the operation required by the cache contract."""
 
         if self.cached_job and self.cached_job.id == job_id:
             self.cached_job = None
 
 
 def test_get_job_details_returns_structured_json() -> None:
-    """Retorna detalhes validados sem incluir a página HTML bruta."""
+    """Returns validated details without including the raw HTML page."""
 
     app = create_app()
     app.dependency_overrides[get_public_linkedin_client] = lambda: FakePublicLinkedInClient()
@@ -70,7 +70,7 @@ def test_get_job_details_returns_structured_json() -> None:
 
 
 def test_refresh_query_bypasses_cached_job() -> None:
-    """A query refresh=true força consulta ao LinkedIn e atualiza o cache."""
+    """The refresh=true query parameter forces a LinkedIn request and updates the cache."""
 
     cache = FakeJobCache(
         JobDetail(
@@ -96,7 +96,7 @@ def test_refresh_query_bypasses_cached_job() -> None:
 
 
 def test_get_job_details_rejects_non_numeric_id() -> None:
-    """Retorna 422 quando o ID da vaga não contém apenas dígitos."""
+    """Returns 422 when the job ID contains anything other than digits."""
 
     app = create_app()
     app.dependency_overrides[get_public_linkedin_client] = lambda: FakePublicLinkedInClient()
@@ -110,7 +110,7 @@ def test_get_job_details_rejects_non_numeric_id() -> None:
 
 @pytest.mark.parametrize("job_id", ["١٢٣", "１２３"])
 def test_get_job_details_rejects_unicode_decimal_id(job_id: str) -> None:
-    """Rejeita dígitos Unicode, pois IDs do LinkedIn usam dígitos ASCII."""
+    """Rejects Unicode digits because LinkedIn IDs use ASCII digits."""
 
     app = create_app()
     app.dependency_overrides[get_public_linkedin_client] = lambda: FakePublicLinkedInClient()

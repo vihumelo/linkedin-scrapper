@@ -1,4 +1,4 @@
-"""Cliente HTTP reutilizável para endpoints públicos do LinkedIn."""
+"""Reusable HTTP client for public LinkedIn endpoints."""
 
 import logging
 import re
@@ -15,35 +15,35 @@ LINKEDIN_ACCEPT_LANGUAGE = "pt-BR,pt;q=0.9"
 
 
 class PublicClientError(Exception):
-    """Erro seguro ao consultar endpoints públicos do LinkedIn."""
+    """Safe error raised when querying public LinkedIn endpoints."""
 
 
 class PublicJobNotFoundError(PublicClientError):
-    """Indica que a vaga não existe ou não está mais disponível."""
+    """Indicates that the job does not exist or is no longer available."""
 
 
 class PublicServiceUnavailableError(PublicClientError):
-    """Indica que o serviço público do LinkedIn está indisponível."""
+    """Indicates that the public LinkedIn service is unavailable."""
 
 
 class PublicResponseError(PublicClientError):
-    """Indica uma resposta inválida do endpoint público."""
+    """Indicates an invalid response from the public endpoint."""
 
 
 class PublicTimeoutError(PublicClientError):
-    """Indica que a consulta pública excedeu o tempo limite."""
+    """Indicates that the public request timed out."""
 
 
 class PublicLinkedInClient:
-    """Consulta páginas públicas do LinkedIn sem enviar cookies de autenticação."""
+    """Queries public LinkedIn pages without sending authentication cookies."""
 
     def __init__(self, http_client: httpx.AsyncClient) -> None:
-        """Inicializa o cliente com uma sessão HTTP sem cookies de autenticação."""
+        """Initializes the client with an HTTP session that has no authentication cookies."""
 
         self._http_client = http_client
 
     async def get_job_details_html(self, job_id: str) -> str:
-        """Retorna o HTML público de detalhes de uma vaga identificada por ID numérico."""
+        """Returns the public job details HTML for a numeric job ID."""
 
         if re.fullmatch(r"[0-9]+", job_id) is None:
             raise ValueError("O identificador da vaga deve conter apenas dígitos.")
@@ -105,7 +105,7 @@ class PublicLinkedInClient:
 
 
 def create_public_http_client(settings: Settings) -> httpx.AsyncClient:
-    """Cria uma sessão HTTP/2 reutilizável sem cookies de autenticação."""
+    """Creates a reusable HTTP/2 session without authentication cookies."""
 
     return httpx.AsyncClient(
         http2=True,

@@ -1,4 +1,4 @@
-"""Testes do parser HTML de cartões de vagas."""
+"""Tests for the job card HTML parser."""
 
 import pytest
 
@@ -6,7 +6,7 @@ from app.parsers.linkedin_jobs import HTMLStructureError, parse_job_search_html
 
 
 def test_parse_componentkey_cards_and_deduplicate_ids() -> None:
-    """Extrai os campos dos cartões modernos e elimina IDs repetidos."""
+    """Extracts fields from modern cards and removes duplicate IDs."""
 
     html = """
     <html><body>
@@ -38,7 +38,7 @@ def test_parse_componentkey_cards_and_deduplicate_ids() -> None:
 
 
 def test_parse_legacy_cards_and_unknown_pagination() -> None:
-    """Lê cartões sem componentkey e mantém paginação desconhecida como nula."""
+    """Reads cards without a componentkey and keeps unknown pagination as None."""
 
     html = """
     <div data-entity-urn="urn:li:jobPosting:789">
@@ -57,7 +57,7 @@ def test_parse_legacy_cards_and_unknown_pagination() -> None:
 
 
 def test_empty_state_is_valid_but_unknown_html_is_an_error() -> None:
-    """Aceita estado explícito sem resultados e sinaliza markup não reconhecido."""
+    """Accepts an explicit no-results state and flags unrecognized markup."""
 
     jobs, has_next = parse_job_search_html("<p>Nenhuma vaga encontrada.</p>", start=0)
 
@@ -68,7 +68,7 @@ def test_empty_state_is_valid_but_unknown_html_is_an_error() -> None:
 
 
 def test_detects_next_page_from_active_and_last_page_indicators() -> None:
-    """Identifica páginas seguintes pelos indicadores numerados do HTML real."""
+    """Identifies subsequent pages using numbered indicators from real HTML."""
 
     html = """
     <div componentkey="job-card-component-ref-123">
@@ -92,7 +92,7 @@ def test_detects_next_page_from_active_and_last_page_indicators() -> None:
 
 
 def test_reports_no_next_page_when_active_indicator_is_last() -> None:
-    """Retorna falso quando a página ativa é a última indicada pela paginação."""
+    """Returns False when the active page is the last one shown in pagination."""
 
     html = """
     <div componentkey="job-card-component-ref-123">
@@ -115,7 +115,7 @@ def test_reports_no_next_page_when_active_indicator_is_last() -> None:
 
 
 def test_rejects_card_with_only_status_text() -> None:
-    """Não interpreta textos de status como título, empresa ou localização."""
+    """Does not interpret status messages as the title, company, or location."""
 
     html = """
     <div componentkey="job-card-component-ref-987">
@@ -131,7 +131,7 @@ def test_rejects_card_with_only_status_text() -> None:
 
 @pytest.mark.parametrize("remaining_value", ["Empresa Exemplo", "São Paulo, Brasil"])
 def test_rejects_ambiguous_company_or_location_value(remaining_value: str) -> None:
-    """Rejeita um único campo sem marcador que pode ser empresa ou localização."""
+    """Rejects a single unmarked field that could be either the company or location."""
 
     html = f"""
     <div componentkey="job-card-component-ref-654">
@@ -145,7 +145,7 @@ def test_rejects_ambiguous_company_or_location_value(remaining_value: str) -> No
 
 
 def test_rejects_posting_age_as_location_when_location_is_missing() -> None:
-    """Não interpreta a idade da publicação como localização quando ela está ausente."""
+    """Does not treat the posting age as the location when the location is absent."""
 
     html = """
     <div componentkey="job-card-component-ref-321">
@@ -167,7 +167,7 @@ def test_rejects_posting_age_as_location_when_location_is_missing() -> None:
     ],
 )
 def test_rejects_unicode_digits_in_job_ids(identifier_attribute: str) -> None:
-    """Rejeita IDs com algarismos Unicode nas duas estruturas de cartão reconhecidas."""
+    """Rejects IDs containing Unicode digits in both recognized card structures."""
 
     html = f"""
     <div {identifier_attribute}>

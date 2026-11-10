@@ -1,4 +1,4 @@
-"""Testes dos logs e metadados globais de requisição."""
+"""Tests for logs and global request metadata."""
 
 import logging
 import re
@@ -10,16 +10,16 @@ from app.main import create_app
 
 
 class FailingAuthenticatedClient:
-    """Cliente falso que levanta uma falha inesperada durante a busca."""
+    """Fake client that raises an unexpected error during the search."""
 
     async def search_jobs(self, keywords: str, geo_id: str, start: int) -> str:
-        """Simula uma exceção não tratada do serviço externo."""
+        """Simulates an unhandled exception from the external service."""
 
         raise RuntimeError("falha interna simulada")
 
 
 def test_request_id_is_returned_and_logged_without_query_values(caplog) -> None:
-    """Correlaciona a resposta com o log e registra apenas o template da rota."""
+    """Correlates the response with the log and records only the route template."""
 
     app = create_app()
     app.dependency_overrides[get_authenticated_linkedin_client] = lambda: (
@@ -50,7 +50,7 @@ def test_request_id_is_returned_and_logged_without_query_values(caplog) -> None:
 
 
 def test_invalid_request_id_is_replaced() -> None:
-    """Não reflete valores arbitrários no header de correlação."""
+    """Does not echo arbitrary values in the correlation header."""
 
     app = create_app()
 

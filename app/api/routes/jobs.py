@@ -1,4 +1,4 @@
-"""Rotas para operações sobre conjuntos de vagas."""
+"""Routes for operations on job collections."""
 
 import logging
 
@@ -27,7 +27,7 @@ async def search_jobs(
     start: int = Query(0, ge=0),
     linkedin_client: AuthenticatedLinkedInClient = Depends(get_authenticated_linkedin_client),
 ) -> JobSearchResponse:
-    """Busca vagas no LinkedIn e retorna cartões e paginação estruturados."""
+    """Searches LinkedIn jobs and returns structured cards and pagination data."""
 
     if not keywords.strip():
         raise HTTPException(

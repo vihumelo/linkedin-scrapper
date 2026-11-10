@@ -1,4 +1,4 @@
-"""Rotas para operações sobre uma vaga específica."""
+"""Routes for operations on a specific job."""
 
 import logging
 
@@ -31,7 +31,7 @@ async def get_job_details(
     public_client: PublicLinkedInClient = Depends(get_public_linkedin_client),
     cache: JobCache = Depends(get_job_cache),
 ) -> JobDetailResponse:
-    """Retorna os detalhes públicos estruturados de uma vaga do LinkedIn."""
+    """Returns structured public details for a LinkedIn job."""
 
     try:
         return await JobDetailService(public_client, cache).get_job(job_id, refresh)

@@ -1,4 +1,4 @@
-"""Configurações da aplicação carregadas do ambiente."""
+"""Application settings loaded from the environment."""
 
 from functools import lru_cache
 from pathlib import Path
@@ -8,7 +8,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    """Configurações da API e da integração com o LinkedIn."""
+    """Settings for the API and LinkedIn integration."""
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -30,6 +30,6 @@ class Settings(BaseSettings):
 
 @lru_cache
 def get_settings() -> Settings:
-    """Retorna uma instância reutilizável das configurações."""
+    """Returns a reusable settings instance."""
 
     return Settings()

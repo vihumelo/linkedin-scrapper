@@ -1,4 +1,4 @@
-"""Orquestra a consulta ao LinkedIn e a extração dos resultados."""
+"""Orchestrates LinkedIn requests and result extraction."""
 
 from app.clients.authenticated_client import AuthenticatedLinkedInClient
 from app.parsers.linkedin_jobs import parse_job_search_html
@@ -10,15 +10,15 @@ from app.schemas.jobs import (
 
 
 class JobSearchService:
-    """Coordena a busca externa, o parsing e a montagem da resposta."""
+    """Coordinates the external search, parsing, and response construction."""
 
     def __init__(self, linkedin_client: AuthenticatedLinkedInClient) -> None:
-        """Armazena o cliente utilizado para consultar o LinkedIn."""
+        """Stores the client used to query LinkedIn."""
 
         self._linkedin_client = linkedin_client
 
     async def search(self, keywords: str, geo_id: str, start: int) -> JobSearchResponse:
-        """Busca vagas e produz a resposta validada da API."""
+        """Searches for jobs and builds the validated API response."""
 
         html = await self._linkedin_client.search_jobs(keywords, geo_id, start)
         jobs, has_next = parse_job_search_html(html, start)

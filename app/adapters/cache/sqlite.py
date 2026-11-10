@@ -1,4 +1,4 @@
-"""Adapter SQLite para persistência dos detalhes de vagas."""
+"""SQLite adapter for persisting job details."""
 
 import asyncio
 import sqlite3
@@ -15,10 +15,10 @@ from app.schemas.jobs import JobDetail
 
 
 class SQLiteJobCache(JobCache):
-    """Armazena modelos completos de vaga em um banco SQLite local."""
+    """Stores complete job models in a local SQLite database."""
 
     def __init__(self, database_path: str | Path) -> None:
-        """Define o caminho do banco sem executar operações bloqueantes de disco."""
+        """Sets the database path without performing blocking disk operations."""
 
         self._database_path = Path(database_path).expanduser()
         self._schema_ready = False
@@ -27,7 +27,7 @@ class SQLiteJobCache(JobCache):
             raise ValueError("O cache SQLite requer um arquivo para persistir entre conexões.")
 
     async def get(self, job_id: str) -> JobDetail | None:
-        """Recupera uma vaga pelo ID, retornando nulo quando não existir."""
+        """Retrieves a job by ID, returning None when it does not exist."""
 
         try:
             return await asyncio.to_thread(self._get_sync, job_id)
@@ -35,7 +35,7 @@ class SQLiteJobCache(JobCache):
             raise JobCacheError("Não foi possível ler o cache SQLite de vagas.") from exc
 
     async def save(self, job: JobDetail) -> None:
-        """Insere ou atualiza a vaga e mantém os timestamps em UTC."""
+        """Inserts or updates a job and keeps timestamps in UTC."""
 
         try:
             await asyncio.to_thread(self._save_sync, job)
@@ -43,7 +43,7 @@ class SQLiteJobCache(JobCache):
             raise JobCacheError("Não foi possível gravar no cache SQLite de vagas.") from exc
 
     async def delete(self, job_id: str) -> None:
-        """Remove uma vaga pelo ID, sem erro quando ela não estiver armazenada."""
+        """Removes a job by ID without error when it is not stored."""
 
         try:
             await asyncio.to_thread(self._delete_sync, job_id)
@@ -83,7 +83,7 @@ class SQLiteJobCache(JobCache):
 
     @contextmanager
     def _connection(self) -> Iterator[sqlite3.Connection]:
-        """Abre conexão transacional e cria banco, diretórios e tabela sob demanda."""
+        """Opens a transaction and creates the database, directories, and table as needed."""
 
         self._database_path.parent.mkdir(parents=True, exist_ok=True)
         with closing(sqlite3.connect(self._database_path, timeout=10)) as connection:
@@ -93,7 +93,7 @@ class SQLiteJobCache(JobCache):
                 yield connection
 
     def _ensure_schema(self, connection: sqlite3.Connection) -> None:
-        """Cria a tabela uma vez por adapter, com proteção para chamadas concorrentes."""
+        """Creates the table once per adapter, with protection for concurrent calls."""
 
         if self._schema_ready:
             return

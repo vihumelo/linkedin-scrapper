@@ -1,4 +1,4 @@
-"""Contrato de persistência para detalhes de vagas."""
+"""Persistence contract for job details."""
 
 from abc import ABC, abstractmethod
 
@@ -6,20 +6,20 @@ from app.schemas.jobs import JobDetail
 
 
 class JobCacheError(RuntimeError):
-    """Indica uma falha de armazenamento independente do adapter utilizado."""
+    """Indicates a storage failure, regardless of the adapter in use."""
 
 
 class JobCache(ABC):
-    """Define operações assíncronas independentes do armazenamento utilizado."""
+    """Defines asynchronous operations that are independent of the storage backend."""
 
     @abstractmethod
     async def get(self, job_id: str) -> JobDetail | None:
-        """Recupera os detalhes da vaga ou retorna nulo quando não estão armazenados."""
+        """Retrieves job details or returns None when they are not stored."""
 
     @abstractmethod
     async def save(self, job: JobDetail) -> None:
-        """Insere ou atualiza os detalhes de uma vaga."""
+        """Inserts or updates a job’s details."""
 
     @abstractmethod
     async def delete(self, job_id: str) -> None:
-        """Remove do armazenamento os detalhes associados ao ID informado."""
+        """Removes the details associated with the given ID from storage."""

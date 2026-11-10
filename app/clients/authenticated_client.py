@@ -1,4 +1,4 @@
-"""Cliente assíncrono para a busca de vagas do LinkedIn."""
+"""Asynchronous client for LinkedIn job searches."""
 
 import logging
 from time import perf_counter
@@ -13,36 +13,36 @@ LINKEDIN_SEARCH_URL = "https://www.linkedin.com/jobs/search-results/"
 
 
 class AuthenticatedClientError(Exception):
-    """Erro seguro da integração com o LinkedIn."""
+    """Safe error raised by the LinkedIn integration."""
 
 
 class LinkedInCredentialsError(AuthenticatedClientError):
-    """Indica que os cookies necessários não foram configurados."""
+    """Indicates that the required cookies are not configured."""
 
 
 class LinkedInAuthenticationError(AuthenticatedClientError):
-    """Indica que o LinkedIn recusou a autenticação configurada."""
+    """Indicates that LinkedIn rejected the configured authentication."""
 
 
 class LinkedInResponseError(AuthenticatedClientError):
-    """Indica uma resposta inválida ou inesperada do LinkedIn."""
+    """Indicates an invalid or unexpected response from LinkedIn."""
 
 
 class LinkedInTimeoutError(AuthenticatedClientError):
-    """Indica que a requisição ao LinkedIn excedeu o tempo limite."""
+    """Indicates that the LinkedIn request timed out."""
 
 
 class AuthenticatedLinkedInClient:
-    """Executa consultas de busca usando um cliente HTTP compartilhado."""
+    """Performs search requests using a shared HTTP client."""
 
     def __init__(self, http_client: httpx.AsyncClient, settings: Settings) -> None:
-        """Inicializa o cliente com a sessão HTTP e as configurações da integração."""
+        """Initializes the client with the HTTP session and integration settings."""
 
         self._http_client = http_client
         self._settings = settings
 
     async def search_jobs(self, keywords: str, geo_id: str, start: int) -> str:
-        """Solicita ao LinkedIn a página HTML de resultados para os parâmetros recebidos."""
+        """Requests the LinkedIn results HTML page for the supplied parameters."""
 
         if not self._settings.linkedin_li_at or not self._settings.linkedin_jsessionid:
             logger.error(
@@ -116,7 +116,7 @@ class AuthenticatedLinkedInClient:
 
 
 def create_authenticated_http_client(settings: Settings) -> httpx.AsyncClient:
-    """Cria uma sessão HTTP/2 reutilizável com os headers e cookies da integração."""
+    """Creates a reusable HTTP/2 session with the integration headers and cookies."""
 
     return httpx.AsyncClient(
         http2=True,
@@ -135,7 +135,7 @@ def create_authenticated_http_client(settings: Settings) -> httpx.AsyncClient:
 
 
 def _redirected_to_authentication(response: httpx.Response) -> bool:
-    """Detecta redirecionamentos para login, authwall ou checkpoint sem ler o HTML."""
+    """Detects redirects to login, authwall, or checkpoint pages without reading the HTML."""
 
     urls = [response.url, *(item.url for item in response.history)]
     return any(

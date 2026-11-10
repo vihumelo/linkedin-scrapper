@@ -1,4 +1,4 @@
-"""Criação e ciclo de vida da aplicação FastAPI."""
+"""FastAPI application creation and lifecycle."""
 
 import logging
 from contextlib import asynccontextmanager
@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(application: FastAPI) -> AsyncIterator[None]:
-    """Cria e encerra a sessão HTTP reutilizável da integração com o LinkedIn."""
+    """Creates and closes the reusable HTTP session for the LinkedIn integration."""
 
     settings = get_settings()
     application.state.job_cache = create_job_cache(settings)
@@ -44,7 +44,7 @@ async def lifespan(application: FastAPI) -> AsyncIterator[None]:
 
 
 def create_app() -> FastAPI:
-    """Monta a aplicação, suas rotas e a documentação automática."""
+    """Builds the application, its routes, and the automatic API documentation."""
 
     configure_logging()
     application = FastAPI(
@@ -58,7 +58,7 @@ def create_app() -> FastAPI:
         request: Request,
         call_next: RequestResponseEndpoint,
     ) -> Response:
-        """Correlaciona e registra cada requisição sem incluir query ou headers."""
+        """Correlates and logs each request without including query parameters or headers."""
 
         request_id = choose_request_id(request.headers.get("X-Request-ID"))
         request.state.request_id = request_id

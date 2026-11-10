@@ -1,4 +1,4 @@
-"""Configuração de logs estruturados e contexto de requisição."""
+"""Structured logging configuration and request context."""
 
 import json
 import logging
@@ -15,10 +15,10 @@ _STANDARD_RECORD_FIELDS = set(logging.makeLogRecord({}).__dict__)
 
 
 class JSONLogFormatter(logging.Formatter):
-    """Serializa eventos de log como JSON com correlação de requisição."""
+    """Serializes log events as JSON with request correlation."""
 
     def format(self, record: logging.LogRecord) -> str:
-        """Formata evento, contexto e campos extras sem registrar dados da requisição."""
+        """Formats the event, context, and extra fields without logging request data."""
 
         event: dict[str, Any] = {
             "timestamp": datetime.fromtimestamp(record.created, UTC)
@@ -42,7 +42,7 @@ class JSONLogFormatter(logging.Formatter):
 
 
 def configure_logging() -> None:
-    """Configura uma saída JSON única para os logs da aplicação e do Uvicorn."""
+    """Configures a single JSON output for application and Uvicorn logs."""
 
     global _LOGGING_CONFIGURED
     if _LOGGING_CONFIGURED:
@@ -80,7 +80,7 @@ def configure_logging() -> None:
 
 
 def choose_request_id(candidate: str | None) -> str:
-    """Valida o ID recebido ou gera um novo para evitar conteúdo inseguro nos logs."""
+    """Validates the received ID or generates a new one to prevent unsafe log content."""
 
     if candidate and len(candidate) <= 64 and re.fullmatch(r"[A-Za-z0-9._-]+", candidate):
         return candidate

@@ -1,4 +1,4 @@
-"""Testes reutilizáveis do contrato de cache de detalhes de vagas."""
+"""Reusable contract tests for the job details cache."""
 
 import asyncio
 import sqlite3
@@ -11,7 +11,7 @@ from app.schemas.jobs import JobDetail
 
 
 def make_job(job_id: str, title: str = "Técnico de laboratório") -> JobDetail:
-    """Monta detalhes válidos para o contrato de cache."""
+    """Builds valid details for the cache contract."""
 
     return JobDetail(
         id=job_id,
@@ -25,7 +25,7 @@ def make_job(job_id: str, title: str = "Técnico de laboratório") -> JobDetail:
 
 
 async def assert_job_cache_contract(cache: JobCache) -> None:
-    """Valida ausência, leitura, upsert e remoção para qualquer adapter de cache."""
+    """Validates missing records, reads, upserts, and deletion for any cache adapter."""
 
     job_id = "contract-job-1"
     assert await cache.get(job_id) is None
@@ -43,14 +43,14 @@ async def assert_job_cache_contract(cache: JobCache) -> None:
 
 
 def test_sqlite_adapter_obeys_reusable_job_cache_contract(tmp_path: Path) -> None:
-    """Executa o contrato compartilhado contra o adapter SQLite."""
+    """Runs the shared contract against the SQLite adapter."""
 
     cache = SQLiteJobCache(tmp_path / "nested" / "jobs.db")
     asyncio.run(assert_job_cache_contract(cache))
 
 
 def test_sqlite_cache_persists_across_adapter_instances(tmp_path: Path) -> None:
-    """Mantém dados gravados disponíveis após criar uma nova instância do adapter."""
+    """Keeps persisted data available after creating a new adapter instance."""
 
     database_path = tmp_path / "jobs.db"
     job = make_job("persistent-job-2")
@@ -63,7 +63,7 @@ def test_sqlite_cache_persists_across_adapter_instances(tmp_path: Path) -> None:
 
 
 def test_sqlite_timestamps_are_utc_and_upsert_preserves_creation_time(tmp_path: Path) -> None:
-    """Grava timestamps UTC e altera updated_at sem substituir created_at."""
+    """Stores UTC timestamps and updates updated_at without replacing created_at."""
 
     database_path = tmp_path / "jobs.db"
     cache = SQLiteJobCache(database_path)
@@ -89,7 +89,7 @@ def test_sqlite_timestamps_are_utc_and_upsert_preserves_creation_time(tmp_path: 
 
 
 def test_sqlite_cache_handles_concurrent_writes(tmp_path: Path) -> None:
-    """Preserva gravações concorrentes sem corromper os registros."""
+    """Preserves concurrent writes without corrupting records."""
 
     cache = SQLiteJobCache(tmp_path / "jobs.db")
     jobs = [make_job(f"concurrent-job-{index}") for index in range(12)]

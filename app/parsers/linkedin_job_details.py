@@ -1,4 +1,4 @@
-"""Extração de detalhes da página pública de uma vaga no LinkedIn."""
+"""Extracts job details from a public LinkedIn job page."""
 
 import re
 import unicodedata
@@ -25,15 +25,15 @@ APPLICANT_COUNT_PATTERN = re.compile(
 
 
 class JobDetailHTMLStructureError(ValueError):
-    """Indica que o HTML não corresponde a uma página reconhecida de vaga."""
+    """Indicates that the HTML does not match a recognized job page."""
 
 
 class JobDetailNotFoundError(ValueError):
-    """Indica que o HTML informa que a vaga não está mais disponível."""
+    """Indicates that the HTML reports the job is no longer available."""
 
 
 def parse_job_detail_html(html: str, job_id: str) -> JobDetail:
-    """Extrai os campos conhecidos da vaga sem analisar ou resumir seu conteúdo."""
+    """Extracts known job fields without analyzing or summarizing their content."""
 
     soup = BeautifulSoup(html, "lxml")
     title_node = _select_one(soup, ".topcard__title", '[itemprop="title"]')
@@ -77,7 +77,7 @@ def parse_job_detail_html(html: str, job_id: str) -> JobDetail:
 
 
 def _select_one(soup: BeautifulSoup, *selectors: str) -> Tag | None:
-    """Retorna o primeiro elemento encontrado entre seletores semânticos conhecidos."""
+    """Returns the first element found among known semantic selectors."""
 
     for selector in selectors:
         if node := soup.select_one(selector):
@@ -86,7 +86,7 @@ def _select_one(soup: BeautifulSoup, *selectors: str) -> Tag | None:
 
 
 def _clean_text(node: Tag | None) -> str | None:
-    """Retorna texto visível com espaços normalizados, mantendo palavras e pontuação."""
+    """Returns visible text with normalized whitespace while preserving words and punctuation."""
 
     if node is None:
         return None
@@ -95,7 +95,7 @@ def _clean_text(node: Tag | None) -> str | None:
 
 
 def _extract_location(soup: BeautifulSoup) -> str | None:
-    """Seleciona a localização e descarta o total de candidaturas do mesmo bloco."""
+    """Selects the location and discards the applicant count from the same block."""
 
     for selector in ("[data-test-job-location]", '[data-testid*="location"]'):
         if node := soup.select_one(selector):
@@ -110,7 +110,7 @@ def _extract_location(soup: BeautifulSoup) -> str | None:
 
 
 def _extract_criteria(nodes: list[Tag]) -> dict[str, str]:
-    """Mapeia os critérios conhecidos a partir dos rótulos exibidos na página."""
+    """Maps known criteria from the labels displayed on the page."""
 
     criteria: dict[str, str] = {}
     for node in nodes:
@@ -128,7 +128,7 @@ def _extract_criteria(nodes: list[Tag]) -> dict[str, str]:
 
 
 def _normalize_label(value: str | None) -> str:
-    """Normaliza acentos e caixa para comparar rótulos localizados de critérios."""
+    """Normalizes accents and case to compare localized criteria labels."""
 
     if value is None:
         return ""
