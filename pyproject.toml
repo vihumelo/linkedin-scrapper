@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "linkedin-scrapper"
+version = "0.1.0"
+description = "REST API para busca de vagas no LinkedIn"
+requires-python = ">=3.12"
+dependencies = [
+    "beautifulsoup4>=4.12,<5",
+    "fastapi>=0.110,<1",
+    "httpx[http2]>=0.27,<1",
+    "lxml>=5,<7",
+    "pydantic-settings>=2.2,<3",
+    "uvicorn[standard]>=0.29,<1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "httpx2>=2,<3",
+    "pytest>=8,<9",
+    "ruff>=0.5,<1",
+]
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+namespaces = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]

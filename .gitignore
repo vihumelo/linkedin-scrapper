@@ -1,0 +1,41 @@
+# Configuração local e segredos
+.env
+.env.*
+!.env.example
+
+# Ambientes virtuais Python
+.venv/
+venv/
+env/
+
+# Dados e bancos locais
+/data/
+*.db
+*.sqlite
+*.sqlite3
+*-journal
+*-shm
+*-wal
+
+# Python, ferramentas e testes
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# Builds e logs
+/build/
+/dist/
+*.log
+
+# Arquivos do sistema operacional
+.DS_Store
+Thumbs.db
