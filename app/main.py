@@ -1,9 +1,9 @@
 """FastAPI application creation and lifecycle."""
 
 import logging
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from time import perf_counter
-from typing import AsyncIterator
 
 from fastapi import FastAPI, Request, Response
 from fastapi.responses import JSONResponse
@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
-async def lifespan(application: FastAPI) -> AsyncIterator[None]:
+async def lifespan(application: FastAPI) -> AsyncGenerator[None, None]:
     """Creates and closes the reusable HTTP session for the LinkedIn integration."""
 
     settings = get_settings()
@@ -72,7 +72,7 @@ def create_app() -> FastAPI:
                     "event": "http.request.exception",
                     "request_id": request_id,
                     "method": request.method,
-                    "route": getattr(request.scope.get("route"), "path", "unmatched"),
+                    "route": _route_template(request),
                 },
             )
             response = JSONResponse(
@@ -80,8 +80,7 @@ def create_app() -> FastAPI:
                 content={"detail": "Erro interno do servidor.", "request_id": request_id},
             )
 
-        route = request.scope.get("route")
-        route_path = getattr(route, "path", None) or "unmatched"
+        route_path = _route_template(request)
         duration_ms = round((perf_counter() - started_at) * 1000, 2)
         log_level = (
             logging.ERROR
@@ -107,6 +106,32 @@ def create_app() -> FastAPI:
     application.include_router(jobs_router, prefix="/api")
     application.include_router(job_router, prefix="/api")
     return application
+
+
+def _route_template(request: Request) -> str:
+    """Returns the matched route template, including any prefix omitted by router mounts."""
+
+    route_path = getattr(request.scope.get("route"), "path", None)
+    request_path = request.scope.get("path")
+    if not isinstance(route_path, str) or not isinstance(request_path, str):
+        return "unmatched"
+
+    route_parts = route_path.strip("/").split("/")
+    request_parts = request_path.strip("/").split("/")
+    if len(request_parts) < len(route_parts):
+        return route_path
+
+    prefix_parts = request_parts[: len(request_parts) - len(route_parts)]
+    matched_parts = request_parts[-len(route_parts) :]
+    for route_part, request_part in zip(route_parts, matched_parts, strict=True):
+        if (
+            not (route_part.startswith("{") and route_part.endswith("}"))
+            and route_part != request_part
+        ):
+            return route_path
+
+    prefix = "/".join(prefix_parts)
+    return f"/{prefix}/{route_path.lstrip('/')}" if prefix else route_path
 
 
 app = create_app()

@@ -1,7 +1,6 @@
 """Extracts jobs and pagination data from LinkedIn HTML."""
 
 import re
-from collections.abc import Iterable
 
 from bs4 import BeautifulSoup, Tag
 
@@ -68,7 +67,7 @@ def _find_job_cards(soup: BeautifulSoup) -> list[tuple[str, Tag]]:
 
     cards: list[tuple[str, Tag]] = []
     seen_ids: set[str] = set()
-    for element in soup.find_all(attrs={"componentkey": JOB_COMPONENT_PATTERN}):
+    for element in soup.find_all(True, attrs={"componentkey": True}):
         match = JOB_COMPONENT_PATTERN.fullmatch(str(element.get("componentkey", "")))
         if match and match.group(1) not in seen_ids:
             job_id = match.group(1)
@@ -78,7 +77,7 @@ def _find_job_cards(soup: BeautifulSoup) -> list[tuple[str, Tag]]:
     if cards:
         return cards
 
-    for element in soup.find_all(attrs={"data-entity-urn": JOB_URN_PATTERN}):
+    for element in soup.find_all(True, attrs={"data-entity-urn": True}):
         match = JOB_URN_PATTERN.search(str(element.get("data-entity-urn", "")))
         if match and match.group(1) not in seen_ids:
             job_id = match.group(1)
@@ -101,12 +100,11 @@ def _parse_job_card(job_id: str, card: Tag) -> JobListing:
         else None
     )
 
-    if title_span is not None and _text_value(title_span):
-        title_index = first_paragraph_index
+    if first_paragraph_index is not None and title_span is not None and _text_value(title_span):
         title = _text_value(title_span)
         field_values = [
             value
-            for paragraph in paragraphs[title_index + 1 :]
+            for paragraph in paragraphs[first_paragraph_index + 1 :]
             if (value := _text_value(paragraph)) and not _is_job_card_metadata(value)
         ]
         if len(field_values) == 1:
@@ -144,12 +142,6 @@ def _is_job_card_metadata(value: str) -> bool:
     )
 
 
-def _text_values(elements: Iterable[Tag]) -> list[str]:
-    """Returns the non-empty text values from a sequence of elements."""
-
-    return [value for element in elements if (value := _text_value(element)) is not None]
-
-
 def _text_value(element: Tag | None) -> str | None:
     """Gets visible text and trims surrounding whitespace without changing its content."""
 
@@ -171,10 +163,10 @@ def _find_semantic_location(card: Tag) -> str | None:
         if "location" in label.casefold() or "localização" in label.casefold():
             return _text_value(element)
     for element in card.find_all(["span", "div"], attrs={"class": True}):
-        classes = element.get("class", [])
+        classes = element.get("class")
         if isinstance(classes, str):
             classes = classes.split()
-        if any(value in {"location", "job-search-card__location"} for value in classes):
+        if classes and any(value in {"location", "job-search-card__location"} for value in classes):
             return _text_value(element)
     return None
 
@@ -207,7 +199,7 @@ def _find_has_next(soup: BeautifulSoup, start: int) -> bool | None:
 def _find_pagination_roots(soup: BeautifulSoup) -> list[Tag]:
     """Finds pagination containers by accessible or semantic attributes."""
 
-    roots = soup.select('[data-testid="pagination-controls-list"]')
+    roots: list[Tag] = soup.select('[data-testid="pagination-controls-list"]')
     if roots:
         return roots
 
@@ -275,7 +267,7 @@ def _find_next_control_state(root: Tag, start: int) -> bool | None:
 
     saw_disabled_next = False
     for control in root.find_all(["a", "button"]):
-        rel = control.get("rel", [])
+        rel = control.get("rel")
         if isinstance(rel, str):
             rel = rel.split()
         labels = " ".join(
@@ -285,7 +277,7 @@ def _find_next_control_state(root: Tag, start: int) -> bool | None:
         labels = f"{labels} {_text_value(control) or ''}"
         href = str(control.get("href", ""))
         offset = re.search(r"(?:[?&]|&amp;)start=(\d+)", href)
-        explicit_next = "next" in {str(value).casefold() for value in rel}
+        explicit_next = bool(rel) and "next" in {str(value).casefold() for value in rel}
         explicit_next = explicit_next or bool(NEXT_CONTROL_PATTERN.search(labels))
         if offset and int(offset.group(1)) > start:
             explicit_next = True
@@ -307,9 +299,9 @@ def _has_rel_next(soup: BeautifulSoup) -> bool:
     """Recognizes a link explicitly marked as next by its HTML semantics."""
 
     for link in soup.find_all("a", attrs={"rel": True}):
-        rel = link.get("rel", [])
+        rel = link.get("rel")
         if isinstance(rel, str):
             rel = rel.split()
-        if "next" in {str(value).casefold() for value in rel}:
+        if rel and "next" in {str(value).casefold() for value in rel}:
             return True
     return False

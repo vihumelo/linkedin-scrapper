@@ -1,5 +1,7 @@
 """Orchestrates LinkedIn requests and result extraction."""
 
+from typing import Literal
+
 from app.clients.authenticated_client import AuthenticatedLinkedInClient
 from app.parsers.linkedin_jobs import parse_job_search_html
 from app.schemas.jobs import (
@@ -21,7 +23,7 @@ class JobSearchService:
         self,
         keywords: str,
         geo_id: str,
-        f_tpr: str,
+        f_tpr: Literal["r86400", "r604800", "r2592000"],
         start: int,
     ) -> JobSearchResponse:
         """Searches for jobs and builds the validated API response."""

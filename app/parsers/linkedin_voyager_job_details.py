@@ -2,8 +2,8 @@
 
 from collections.abc import Iterator
 from datetime import UTC, datetime
-from typing import Any
 
+from app.core.json_types import JSONValue
 from app.schemas.jobs import JobDetail
 
 
@@ -11,7 +11,7 @@ class JobDetailVoyagerStructureError(ValueError):
     """Indicates that a Voyager response does not contain recognized job details."""
 
 
-def parse_job_detail_voyager(payload: dict[str, Any], job_id: str) -> JobDetail:
+def parse_job_detail_voyager(payload: dict[str, JSONValue], job_id: str) -> JobDetail:
     """Maps a normalized Voyager response to the job detail model."""
 
     data = payload.get("data", payload)
@@ -56,7 +56,7 @@ def parse_job_detail_voyager(payload: dict[str, Any], job_id: str) -> JobDetail:
     )
 
 
-def _workplace_type(data: dict[str, Any], included: object) -> str | None:
+def _workplace_type(data: dict[str, JSONValue], included: JSONValue | None) -> str | None:
     """Resolves workplace type URNs to their localized labels."""
 
     direct = _find_text(data, ("formattedWorkplaceType",))
@@ -65,20 +65,20 @@ def _workplace_type(data: dict[str, Any], included: object) -> str | None:
     if not isinstance(included, list):
         return None
 
-    workplace_urns = (
-        {value for value in data.get("workplaceTypes", []) if isinstance(value, str)}
-        if isinstance(data.get("workplaceTypes"), list)
-        else set()
-    )
+    workplace_urns: set[str] = set()
+    workplace_types = data.get("workplaceTypes")
+    if isinstance(workplace_types, list):
+        workplace_urns.update(value for value in workplace_types if isinstance(value, str))
     resolutions = data.get("workplaceTypesResolutionResults")
     if isinstance(resolutions, dict):
         workplace_urns.update(value for value in resolutions.values() if isinstance(value, str))
 
-    labels = []
+    labels: list[str] = []
     for entity in included:
         if not isinstance(entity, dict):
             continue
-        if "WorkplaceType" not in entity.get("$type", ""):
+        entity_type = entity.get("$type")
+        if not isinstance(entity_type, str) or "WorkplaceType" not in entity_type:
             continue
         if entity.get("entityUrn") not in workplace_urns:
             continue
@@ -88,7 +88,7 @@ def _workplace_type(data: dict[str, Any], included: object) -> str | None:
     return ", ".join(labels) or None
 
 
-def _company_from_details(data: dict[str, Any], included: object) -> str | None:
+def _company_from_details(data: dict[str, JSONValue], included: JSONValue | None) -> str | None:
     """Resolves a company reference through the Voyager included entities when possible."""
 
     details = data.get("companyDetails")
@@ -108,7 +108,7 @@ def _company_from_details(data: dict[str, Any], included: object) -> str | None:
     return company
 
 
-def _industry_from_company(data: dict[str, Any], included: object) -> str | None:
+def _industry_from_company(data: dict[str, JSONValue], included: JSONValue | None) -> str | None:
     """Reads industry labels from the company entity referenced by the posting."""
 
     entity = _resolved_company_entity(data, included)
@@ -123,7 +123,10 @@ def _industry_from_company(data: dict[str, Any], included: object) -> str | None
     return None
 
 
-def _resolved_company_entity(data: dict[str, Any], included: object) -> dict[str, Any] | None:
+def _resolved_company_entity(
+    data: dict[str, JSONValue],
+    included: JSONValue | None,
+) -> dict[str, JSONValue] | None:
     """Finds the included company entity referenced by company details."""
 
     details = data.get("companyDetails")
@@ -141,7 +144,7 @@ def _resolved_company_entity(data: dict[str, Any], included: object) -> dict[str
     return None
 
 
-def _find_text(source: object, keys: tuple[str, ...]) -> str | None:
+def _find_text(source: JSONValue, keys: tuple[str, ...]) -> str | None:
     """Finds a non-empty text field by trying the supplied key priority in nested data."""
 
     for key in keys:
@@ -153,7 +156,7 @@ def _find_text(source: object, keys: tuple[str, ...]) -> str | None:
     return None
 
 
-def _text_value(value: object) -> str | None:
+def _text_value(value: JSONValue) -> str | None:
     """Extracts readable text from Voyager strings and nested text objects."""
 
     if isinstance(value, str):
@@ -161,9 +164,8 @@ def _text_value(value: object) -> str | None:
         return text or None
     if isinstance(value, dict):
         for key in ("text", "localizedText", "content", "value", "plainText"):
-            if key in value:
-                if text := _text_value(value[key]):
-                    return text
+            if key in value and (text := _text_value(value[key])):
+                return text
     if isinstance(value, list):
         parts = [part for item in value if (part := _text_value(item))]
         if parts:
@@ -171,7 +173,7 @@ def _text_value(value: object) -> str | None:
     return None
 
 
-def _walk(value: object) -> Iterator[object]:
+def _walk(value: JSONValue) -> Iterator[JSONValue]:
     """Yields nested mapping and list values for normalized Voyager payloads."""
 
     yield value
@@ -203,7 +205,7 @@ def _format_enum(value: str | None) -> str | None:
     return enum_value.replace("_", " ").title()
 
 
-def _posted(data: dict[str, Any]) -> str | None:
+def _posted(data: dict[str, JSONValue]) -> str | None:
     """Converts Voyager's millisecond timestamp to an ISO 8601 UTC string."""
 
     for key in ("listedAt", "originalListedAt"):
