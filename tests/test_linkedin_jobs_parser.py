@@ -1,8 +1,27 @@
 """Tests for the job card HTML parser."""
 
+from pathlib import Path
+
 import pytest
 
 from app.parsers.linkedin_jobs import HTMLStructureError, parse_job_search_html
+
+FIXTURE_PATH = Path(__file__).parent / "fixtures" / "linkedin_job_search.html"
+
+
+def test_parse_full_sanitized_real_job_search_response() -> None:
+    """Parses all job cards and pagination from a full sanitized search response."""
+
+    html = FIXTURE_PATH.read_text(encoding="utf-8")
+    jobs, has_next = parse_job_search_html(html, start=0)
+
+    assert len(jobs) == 25
+    assert len({job.id for job in jobs}) == 25
+    assert all(job.company == "EMPRESA REDIGIDA" for job in jobs)
+    assert all(job.title for job in jobs)
+    assert has_next is True
+    assert "EMPRESA REDIGIDA" in html
+    assert "linkedin.com" not in html.casefold()
 
 
 def test_parse_componentkey_cards_and_deduplicate_ids() -> None:
