@@ -15,7 +15,6 @@ from app.clients.authenticated_client import (
     AuthenticatedLinkedInClient,
     create_authenticated_http_client,
 )
-from app.clients.public_client import PublicLinkedInClient, create_public_http_client
 from app.core.config import get_settings
 from app.core.dependencies import create_job_cache
 from app.core.observability import REQUEST_ID_CONTEXT, choose_request_id, configure_logging
@@ -30,17 +29,14 @@ async def lifespan(application: FastAPI) -> AsyncIterator[None]:
     settings = get_settings()
     application.state.job_cache = create_job_cache(settings)
     authenticated_http_client = create_authenticated_http_client(settings)
-    public_http_client = create_public_http_client(settings)
     application.state.authenticated_linkedin_client = AuthenticatedLinkedInClient(
         authenticated_http_client,
         settings,
     )
-    application.state.public_linkedin_client = PublicLinkedInClient(public_http_client)
     try:
         yield
     finally:
         await authenticated_http_client.aclose()
-        await public_http_client.aclose()
 
 
 def create_app() -> FastAPI:
