@@ -4,7 +4,6 @@ from fastapi import Request
 
 from app.adapters.cache.sqlite import SQLiteJobCache
 from app.clients.authenticated_client import AuthenticatedLinkedInClient
-from app.clients.public_client import PublicLinkedInClient
 from app.core.config import Settings
 from app.ports.job_cache import JobCache
 
@@ -28,9 +27,3 @@ def get_authenticated_linkedin_client(request: Request) -> AuthenticatedLinkedIn
     """Returns the shared authenticated session created during the application lifecycle."""
 
     return request.app.state.authenticated_linkedin_client
-
-
-def get_public_linkedin_client(request: Request) -> PublicLinkedInClient:
-    """Returns the shared public session created during the application lifecycle."""
-
-    return request.app.state.public_linkedin_client
