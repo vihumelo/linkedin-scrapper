@@ -1,4 +1,4 @@
-"""Optional online test for the public job details route.
+"""Optional online test for the authenticated Voyager job details route.
 
 Run it explicitly with:
     RUN_LINKEDIN_JOB_DETAILS_INTEGRATION=1 .venv/bin/python -m pytest \\
@@ -27,14 +27,13 @@ def test_job_details_route_with_live_linkedin_response() -> None:
 
     app = create_app()
     with TestClient(app) as client:
-        response = client.get(f"/api/jobs/{JOB_ID}?refresh=true")
+        response = client.get(f"/api/job/{JOB_ID}?refresh=true")
 
     assert response.status_code == 200
     payload = response.json()
     job = payload["job"]
-    assert payload["source"] == "linkedin_jobs_guest"
+    assert "source" not in payload
     assert job["id"] == JOB_ID
     assert job["title"]
     assert job["company"]
     assert job["description_text"]
-    assert job["description_html"]

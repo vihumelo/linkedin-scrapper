@@ -1,24 +1,27 @@
 """Offline tests for the job details HTTP endpoint."""
 
+import json
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
 
-from app.core.dependencies import get_job_cache, get_public_linkedin_client
+from app.core.dependencies import get_authenticated_linkedin_client, get_job_cache
 from app.main import create_app
 from app.schemas.jobs import JobDetail
 
-FIXTURE_PATH = Path(__file__).parent / "fixtures" / "linkedin_job_detail.html"
+JOB_ID = "4486249045"
+FIXTURE_PATH = Path(__file__).parent / "fixtures" / "linkedin_job_detail_voyager.json"
 
 
-class FakePublicLinkedInClient:
-    """Fake client that returns the real HTML preserved for testing."""
+class FakeAuthenticatedLinkedInClient:
+    """Fake client that returns a Voyager payload without making a network request."""
 
-    async def get_job_details_html(self, job_id: str) -> str:
-        """Returns the reference HTML without making an external request."""
+    async def get_job_details(self, job_id: str) -> dict[str, object]:
+        """Returns the complete sanitized real Voyager response fixture."""
 
-        return FIXTURE_PATH.read_text(encoding="utf-8")
+        return json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))
 
 
 class FakeJobCache:
@@ -50,22 +53,28 @@ class FakeJobCache:
 
 
 def test_get_job_details_returns_structured_json() -> None:
-    """Returns validated details without including the raw HTML page."""
+    """Returns validated details parsed from a Voyager JSON payload."""
 
     app = create_app()
-    app.dependency_overrides[get_public_linkedin_client] = lambda: FakePublicLinkedInClient()
+    app.dependency_overrides[get_authenticated_linkedin_client] = lambda: (
+        FakeAuthenticatedLinkedInClient()
+    )
     app.dependency_overrides[get_job_cache] = lambda: FakeJobCache()
 
     with TestClient(app) as client:
-        response = client.get("/api/jobs/4486249045")
+        response = client.get("/api/job/4486249045")
 
     assert response.status_code == 200
     payload = response.json()
-    assert payload["source"] == "linkedin_jobs_guest"
-    assert payload["job"]["id"] == "4486249045"
+    assert "source" not in payload
+    assert payload["job"]["id"] == JOB_ID
     assert payload["job"]["title"] == "Técnico em Engenharia Clinica"
-    assert payload["job"]["url"] == "https://www.linkedin.com/jobs/view/4486249045/"
-    assert "description_html" in payload["job"]
+    assert payload["job"]["company"] == "[EMPRESA REDIGIDA]"
+    assert payload["job"]["industry"] == "Hospitals and Health Care"
+    assert payload["job"]["workplace_type"] == "On-site"
+    assert payload["job"]["url"] == f"https://www.linkedin.com/jobs/view/{JOB_ID}/"
+    assert payload["job"]["posted"] == datetime.fromtimestamp(1793968839, UTC).isoformat()
+    assert "description_html" not in payload["job"]
     assert "<html" not in response.text
 
 
@@ -83,11 +92,13 @@ def test_refresh_query_bypasses_cached_job() -> None:
         )
     )
     app = create_app()
-    app.dependency_overrides[get_public_linkedin_client] = lambda: FakePublicLinkedInClient()
+    app.dependency_overrides[get_authenticated_linkedin_client] = lambda: (
+        FakeAuthenticatedLinkedInClient()
+    )
     app.dependency_overrides[get_job_cache] = lambda: cache
 
     with TestClient(app) as client:
-        response = client.get("/api/jobs/4486249045?refresh=true")
+        response = client.get("/api/job/4486249045?refresh=true")
 
     assert response.status_code == 200
     assert response.json()["job"]["title"] == "Técnico em Engenharia Clinica"
@@ -99,11 +110,13 @@ def test_get_job_details_rejects_non_numeric_id() -> None:
     """Returns 422 when the job ID contains anything other than digits."""
 
     app = create_app()
-    app.dependency_overrides[get_public_linkedin_client] = lambda: FakePublicLinkedInClient()
+    app.dependency_overrides[get_authenticated_linkedin_client] = lambda: (
+        FakeAuthenticatedLinkedInClient()
+    )
     app.dependency_overrides[get_job_cache] = lambda: FakeJobCache()
 
     with TestClient(app) as client:
-        response = client.get("/api/jobs/not-a-job-id")
+        response = client.get("/api/job/not-a-job-id")
 
     assert response.status_code == 422
 
@@ -113,10 +126,12 @@ def test_get_job_details_rejects_unicode_decimal_id(job_id: str) -> None:
     """Rejects Unicode digits because LinkedIn IDs use ASCII digits."""
 
     app = create_app()
-    app.dependency_overrides[get_public_linkedin_client] = lambda: FakePublicLinkedInClient()
+    app.dependency_overrides[get_authenticated_linkedin_client] = lambda: (
+        FakeAuthenticatedLinkedInClient()
+    )
     app.dependency_overrides[get_job_cache] = lambda: FakeJobCache()
 
     with TestClient(app) as client:
-        response = client.get(f"/api/jobs/{job_id}")
+        response = client.get(f"/api/job/{job_id}")
 
     assert response.status_code == 422
