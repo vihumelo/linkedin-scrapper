@@ -3,7 +3,7 @@
 import asyncio
 import sqlite3
 import threading
-from collections.abc import Iterator
+from collections.abc import Generator
 from contextlib import closing, contextmanager
 from datetime import UTC, datetime
 from pathlib import Path
@@ -82,7 +82,7 @@ class SQLiteJobCache(JobCache):
             connection.execute("DELETE FROM job_cache WHERE job_id = ?", (job_id,))
 
     @contextmanager
-    def _connection(self) -> Iterator[sqlite3.Connection]:
+    def _connection(self) -> Generator[sqlite3.Connection, None, None]:
         """Opens a transaction and creates the database, directories, and table as needed."""
 
         self._database_path.parent.mkdir(parents=True, exist_ok=True)

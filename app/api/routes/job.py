@@ -1,6 +1,7 @@
 """Routes for operations on a specific job."""
 
 import logging
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 
@@ -25,10 +26,13 @@ router = APIRouter(prefix="/job", tags=["job"])
 
 @router.get("/{job_id}", response_model=JobDetailResponse)
 async def get_job_details(
+    linkedin_client: Annotated[
+        AuthenticatedLinkedInClient,
+        Depends(get_authenticated_linkedin_client),
+    ],
+    cache: Annotated[JobCache, Depends(get_job_cache)],
     job_id: str = Path(..., min_length=1, pattern=r"^[0-9]+$"),
     refresh: bool = Query(False),
-    linkedin_client: AuthenticatedLinkedInClient = Depends(get_authenticated_linkedin_client),
-    cache: JobCache = Depends(get_job_cache),
 ) -> JobDetailResponse:
     """Returns structured details for a LinkedIn job."""
 

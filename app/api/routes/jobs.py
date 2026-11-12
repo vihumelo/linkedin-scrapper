@@ -1,7 +1,7 @@
 """Routes for operations on job collections."""
 
 import logging
-from typing import Literal
+from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
@@ -23,6 +23,10 @@ router = APIRouter(prefix="/jobs", tags=["jobs"])
 
 @router.get("/search", response_model=JobSearchResponse)
 async def search_jobs(
+    linkedin_client: Annotated[
+        AuthenticatedLinkedInClient,
+        Depends(get_authenticated_linkedin_client),
+    ],
     keywords: str = Query(..., min_length=1),
     geo_id: str = Query("90009574", min_length=1),
     f_tpr: Literal["r86400", "r604800", "r2592000"] = Query(
@@ -30,7 +34,6 @@ async def search_jobs(
         alias="f_TPR",
     ),
     start: int = Query(0, ge=0),
-    linkedin_client: AuthenticatedLinkedInClient = Depends(get_authenticated_linkedin_client),
 ) -> JobSearchResponse:
     """Searches LinkedIn jobs and returns structured cards and pagination data."""
 

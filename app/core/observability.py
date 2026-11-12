@@ -10,7 +10,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 REQUEST_ID_CONTEXT: ContextVar[str | None] = ContextVar("request_id", default=None)
-_LOGGING_CONFIGURED = False
+_logging_configured = False
 _STANDARD_RECORD_FIELDS = set(logging.makeLogRecord({}).__dict__)
 
 
@@ -44,8 +44,8 @@ class JSONLogFormatter(logging.Formatter):
 def configure_logging() -> None:
     """Configures a single JSON output for application and Uvicorn logs."""
 
-    global _LOGGING_CONFIGURED
-    if _LOGGING_CONFIGURED:
+    global _logging_configured
+    if _logging_configured:
         return
 
     logging.config.dictConfig(
@@ -76,7 +76,7 @@ def configure_logging() -> None:
             },
         }
     )
-    _LOGGING_CONFIGURED = True
+    _logging_configured = True
 
 
 def choose_request_id(candidate: str | None) -> str:

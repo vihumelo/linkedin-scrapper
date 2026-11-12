@@ -2,11 +2,13 @@
 
 import logging
 from time import perf_counter
+from typing import Literal
 from urllib.parse import urlparse
 
 import httpx
 
 from app.core.config import Settings
+from app.core.json_types import JSONValue, normalize_json_value
 
 logger = logging.getLogger(__name__)
 LINKEDIN_SEARCH_URL = "https://www.linkedin.com/jobs/search-results/"
@@ -53,7 +55,13 @@ class AuthenticatedLinkedInClient:
         self._http_client = http_client
         self._settings = settings
 
-    async def search_jobs(self, keywords: str, geo_id: str, f_tpr: str, start: int) -> str:
+    async def search_jobs(
+        self,
+        keywords: str,
+        geo_id: str,
+        f_tpr: Literal["r86400", "r604800", "r2592000"],
+        start: int,
+    ) -> str:
         """Requests the LinkedIn results HTML page for the supplied parameters."""
 
         if not self._settings.linkedin_li_at or not self._settings.linkedin_jsessionid:
@@ -127,7 +135,7 @@ class AuthenticatedLinkedInClient:
             raise LinkedInResponseError("O LinkedIn retornou uma página vazia.")
         return response.text
 
-    async def get_job_details(self, job_id: str) -> dict[str, object]:
+    async def get_job_details(self, job_id: str) -> dict[str, JSONValue]:
         """Requests normalized job details from LinkedIn's Voyager API."""
 
         if not self._settings.linkedin_li_at or not self._settings.linkedin_jsessionid:
@@ -187,28 +195,42 @@ class AuthenticatedLinkedInClient:
                 "duration_ms": round((perf_counter() - started_at) * 1000, 2),
             },
         )
-        if response.status_code in (401, 403) or _redirected_to_authentication(response):
-            raise LinkedInAuthenticationError("O LinkedIn recusou a autenticação configurada.")
-        if response.status_code == 404:
-            raise LinkedInJobNotFoundError("A vaga não existe ou não está mais disponível.")
-        if response.status_code == 429 or response.status_code >= 500:
-            raise LinkedInServiceUnavailableError(
-                "O endpoint Voyager do LinkedIn está indisponível."
-            )
-        if response.is_error:
-            raise LinkedInResponseError("O LinkedIn retornou uma resposta de erro.")
-        if (
-            LINKEDIN_VOYAGER_ACCEPT.split(";")[0]
-            not in response.headers.get("content-type", "").casefold()
-        ):
-            raise LinkedInResponseError("O LinkedIn não retornou uma resposta JSON Voyager válida.")
-        try:
-            payload = response.json()
-        except ValueError as exc:
-            raise LinkedInResponseError("O LinkedIn retornou um JSON inválido.") from exc
-        if not isinstance(payload, dict):
-            raise LinkedInResponseError("O LinkedIn retornou uma estrutura JSON inesperada.")
-        return payload
+        _validate_job_details_response(response)
+        return _decode_job_details_payload(response)
+
+
+def _validate_job_details_response(response: httpx.Response) -> None:
+    """Raises a safe integration error when Voyager returns an unsuccessful response."""
+
+    if response.status_code in (401, 403) or _redirected_to_authentication(response):
+        raise LinkedInAuthenticationError("O LinkedIn recusou a autenticação configurada.")
+    if response.status_code == 404:
+        raise LinkedInJobNotFoundError("A vaga não existe ou não está mais disponível.")
+    if response.status_code == 429 or response.status_code >= 500:
+        raise LinkedInServiceUnavailableError("O endpoint Voyager do LinkedIn está indisponível.")
+    if response.is_error:
+        raise LinkedInResponseError("O LinkedIn retornou uma resposta de erro.")
+    if (
+        LINKEDIN_VOYAGER_ACCEPT.split(";")[0]
+        not in response.headers.get("content-type", "").casefold()
+    ):
+        raise LinkedInResponseError("O LinkedIn não retornou uma resposta JSON Voyager válida.")
+
+
+def _decode_job_details_payload(response: httpx.Response) -> dict[str, JSONValue]:
+    """Decodes and validates the JSON object returned by the Voyager endpoint."""
+
+    try:
+        payload: object = response.json()
+    except ValueError as exc:
+        raise LinkedInResponseError("O LinkedIn retornou um JSON inválido.") from exc
+    try:
+        normalized_payload = normalize_json_value(payload)
+    except ValueError as exc:
+        raise LinkedInResponseError("O LinkedIn retornou uma estrutura JSON inválida.") from exc
+    if not isinstance(normalized_payload, dict):
+        raise LinkedInResponseError("O LinkedIn retornou uma estrutura JSON inesperada.")
+    return normalized_payload
 
 
 def create_authenticated_http_client(settings: Settings) -> httpx.AsyncClient:
