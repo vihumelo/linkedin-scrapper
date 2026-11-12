@@ -3,8 +3,15 @@
 import pytest
 from fastapi.testclient import TestClient
 
+from app.clients.authenticated_client import (
+    LinkedInAuthenticationError,
+    LinkedInCredentialsError,
+    LinkedInResponseError,
+    LinkedInTimeoutError,
+)
 from app.core.dependencies import get_authenticated_linkedin_client
 from app.main import create_app
+from app.parsers.linkedin_jobs import HTMLStructureError
 
 
 class FakeAuthenticatedLinkedInClient:
@@ -131,3 +138,32 @@ def test_search_jobs_rejects_negative_start() -> None:
         response = client.get("/api/jobs/search", params={"keywords": "biomedicina", "start": -1})
 
     assert response.status_code == 422
+
+
+@pytest.mark.parametrize(
+    ("upstream_error", "expected_status"),
+    [
+        (LinkedInCredentialsError("missing credentials"), 503),
+        (LinkedInAuthenticationError("unauthorized"), 502),
+        (LinkedInTimeoutError("timed out"), 504),
+        (LinkedInResponseError("invalid response"), 502),
+        (HTMLStructureError("unexpected HTML"), 502),
+    ],
+)
+def test_search_jobs_maps_upstream_errors(
+    upstream_error: Exception,
+    expected_status: int,
+) -> None:
+    """Converts integration and parser errors into the documented HTTP statuses."""
+
+    class FailingClient:
+        async def search_jobs(self, keywords: str, geo_id: str, f_tpr: str, start: int) -> str:
+            raise upstream_error
+
+    app = create_app()
+    app.dependency_overrides[get_authenticated_linkedin_client] = lambda: FailingClient()
+
+    with TestClient(app) as client:
+        response = client.get("/api/jobs/search", params={"keywords": "biomedicina"})
+
+    assert response.status_code == expected_status

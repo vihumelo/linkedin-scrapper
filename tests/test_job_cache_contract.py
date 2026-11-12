@@ -2,6 +2,7 @@
 
 import asyncio
 import sqlite3
+from contextlib import closing
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -74,7 +75,7 @@ def test_sqlite_timestamps_are_utc_and_upsert_preserves_creation_time(tmp_path: 
         await cache.save(job.model_copy(update={"title": "Título atualizado"}))
 
     asyncio.run(save_twice())
-    with sqlite3.connect(database_path) as connection:
+    with closing(sqlite3.connect(database_path)) as connection:
         created_at, updated_at = connection.execute(
             "SELECT created_at, updated_at FROM job_cache WHERE job_id = ?",
             (job.id,),
