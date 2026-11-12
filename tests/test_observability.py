@@ -43,7 +43,7 @@ def test_request_id_is_returned_and_logged_without_query_values(caplog) -> None:
         if getattr(record, "event", None) == "http.request.completed"
     )
     assert completed.request_id == "trace-abc_123"
-    assert completed.route == "/jobs/search"
+    assert completed.route == "/api/jobs/search"
     assert completed.status_code == 500
     assert not hasattr(completed, "query")
     assert "termo privado" not in caplog.text
