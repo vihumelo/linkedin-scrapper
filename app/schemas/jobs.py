@@ -49,20 +49,19 @@ class JobSearchResponse(BaseModel):
 
 
 class JobDetail(JobListing):
-    """Additional data extracted from a public job page."""
+    """Additional data extracted from a LinkedIn job posting."""
 
-    posted_text: str | None = None
+    posted: str | None = None
     seniority_level: str | None = None
     employment_type: str | None = None
+    workplace_type: str | None = None
     industry: str | None = None
     description_text: str | None = None
-    description_html: str | None = None
 
 
 class JobDetailResponse(BaseModel):
-    """Structured response from the public job details endpoint."""
+    """Structured response from the authenticated LinkedIn job details endpoint."""
 
     model_config = ConfigDict(extra="forbid")
 
-    source: Literal["linkedin_jobs_guest"] = "linkedin_jobs_guest"
     job: JobDetail

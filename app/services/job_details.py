@@ -2,8 +2,8 @@
 
 import logging
 
-from app.clients.public_client import PublicLinkedInClient
-from app.parsers.linkedin_job_details import parse_job_detail_html
+from app.clients.authenticated_client import AuthenticatedLinkedInClient
+from app.parsers.linkedin_voyager_job_details import parse_job_detail_voyager
 from app.ports.job_cache import JobCache, JobCacheError
 from app.schemas.jobs import JobDetail, JobDetailResponse
 
@@ -11,12 +11,12 @@ logger = logging.getLogger(__name__)
 
 
 class JobDetailService:
-    """Coordinates the public request, parsing, and response construction."""
+    """Coordinates the authenticated request, parsing, and response construction."""
 
-    def __init__(self, public_client: PublicLinkedInClient, cache: JobCache) -> None:
-        """Stores the injected public client and cache port."""
+    def __init__(self, linkedin_client: AuthenticatedLinkedInClient, cache: JobCache) -> None:
+        """Stores the injected authenticated client and cache port."""
 
-        self._public_client = public_client
+        self._linkedin_client = linkedin_client
         self._cache = cache
 
     async def get_job(self, job_id: str, refresh: bool = False) -> JobDetailResponse:
@@ -54,8 +54,8 @@ class JobDetailService:
                 extra={"event": "cache.lookup", "result": "bypassed", "reason": "refresh"},
             )
 
-        html = await self._public_client.get_job_details_html(job_id)
-        job = parse_job_detail_html(html, job_id)
+        payload = await self._linkedin_client.get_job_details(job_id)
+        job = parse_job_detail_voyager(payload, job_id)
         if _is_cacheable(job):
             try:
                 await self._cache.save(job)

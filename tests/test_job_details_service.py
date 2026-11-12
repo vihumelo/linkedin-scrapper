@@ -9,12 +9,15 @@ from app.schemas.jobs import JobDetail
 from app.services.job_details import JobDetailService
 
 JOB_ID = "4486249045"
-COMPLETE_JOB_HTML = """
-<h2 class="topcard__title">Técnico em Engenharia Clínica</h2>
-<a class="topcard__org-name-link">Empresa Exemplo</a>
-<div class="show-more-less-html__markup"><p>Descrição completa da vaga.</p></div>
-"""
-INCOMPLETE_JOB_HTML = '<h2 class="topcard__title">Vaga sem detalhes suficientes</h2>'
+COMPLETE_JOB_PAYLOAD = {
+    "data": {
+        "title": "Técnico em Engenharia Clínica",
+        "companyDetails": {"companyName": "Empresa Exemplo"},
+        "formattedLocation": "São Paulo, Brasil",
+        "localizedDescription": "Descrição completa da vaga.",
+    }
+}
+INCOMPLETE_JOB_PAYLOAD = {"data": {"title": "Vaga sem detalhes suficientes"}}
 
 
 def make_job(**overrides: str | None) -> JobDetail:
@@ -32,18 +35,18 @@ def make_job(**overrides: str | None) -> JobDetail:
     return JobDetail(**fields)
 
 
-class FakePublicClient:
-    """Fake public client that counts LinkedIn requests."""
+class FakeAuthenticatedClient:
+    """Fake authenticated client that counts Voyager requests."""
 
-    def __init__(self, html: str = COMPLETE_JOB_HTML) -> None:
-        self.html = html
+    def __init__(self, payload: dict[str, object] | None = None) -> None:
+        self.payload = payload or COMPLETE_JOB_PAYLOAD
         self.requested_ids: list[str] = []
 
-    async def get_job_details_html(self, job_id: str) -> str:
-        """Returns static HTML and records the queried ID."""
+    async def get_job_details(self, job_id: str) -> dict[str, object]:
+        """Returns static Voyager JSON and records the queried ID."""
 
         self.requested_ids.append(job_id)
-        return self.html
+        return self.payload
 
 
 class FakeJobCache:
@@ -81,7 +84,7 @@ class FakeJobCache:
 def test_returns_cached_job_without_calling_linkedin() -> None:
     """Returns the stored details and avoids an external request on a cache hit."""
 
-    client = FakePublicClient()
+    client = FakeAuthenticatedClient()
     cache = FakeJobCache(make_job())
 
     response = asyncio.run(JobDetailService(client, cache).get_job(JOB_ID))
@@ -93,7 +96,7 @@ def test_returns_cached_job_without_calling_linkedin() -> None:
 def test_fetches_and_caches_complete_job_on_cache_miss() -> None:
     """Queries LinkedIn and stores complete details when the cache is empty."""
 
-    client = FakePublicClient()
+    client = FakeAuthenticatedClient()
     cache = FakeJobCache()
 
     response = asyncio.run(JobDetailService(client, cache).get_job(JOB_ID))
@@ -106,7 +109,7 @@ def test_fetches_and_caches_complete_job_on_cache_miss() -> None:
 def test_cache_read_failure_falls_back_to_linkedin() -> None:
     """Fetches the job from LinkedIn when reading the cache fails."""
 
-    client = FakePublicClient()
+    client = FakeAuthenticatedClient()
     cache = FakeJobCache()
     cache.get_error = JobCacheError("cache indisponível")
 
@@ -120,7 +123,7 @@ def test_cache_read_failure_falls_back_to_linkedin() -> None:
 def test_incomplete_cached_job_falls_back_to_linkedin() -> None:
     """Does not return incomplete records already present in the database."""
 
-    client = FakePublicClient()
+    client = FakeAuthenticatedClient()
     cache = FakeJobCache(make_job(description_text=None))
 
     response = asyncio.run(JobDetailService(client, cache).get_job(JOB_ID))
@@ -133,7 +136,7 @@ def test_incomplete_cached_job_falls_back_to_linkedin() -> None:
 def test_cache_write_failure_does_not_discard_linkedin_response() -> None:
     """Returns LinkedIn details even when they cannot be written to the cache."""
 
-    client = FakePublicClient()
+    client = FakeAuthenticatedClient()
     cache = FakeJobCache()
     cache.save_error = JobCacheError("cache indisponível")
 
@@ -146,7 +149,7 @@ def test_cache_write_failure_does_not_discard_linkedin_response() -> None:
 def test_does_not_cache_title_only_job() -> None:
     """Does not cache the job if any required cache field is missing."""
 
-    client = FakePublicClient(INCOMPLETE_JOB_HTML)
+    client = FakeAuthenticatedClient(INCOMPLETE_JOB_PAYLOAD)
     cache = FakeJobCache()
 
     response = asyncio.run(JobDetailService(client, cache).get_job(JOB_ID))
@@ -158,7 +161,7 @@ def test_does_not_cache_title_only_job() -> None:
 def test_refresh_skips_cache_read_and_saves_updated_job() -> None:
     """Bypasses the current cache entry and updates it after fetching the job."""
 
-    client = FakePublicClient()
+    client = FakeAuthenticatedClient()
     cache = FakeJobCache(make_job(title="Título antigo"))
 
     response = asyncio.run(JobDetailService(client, cache).get_job(JOB_ID, refresh=True))
@@ -187,8 +190,8 @@ def test_does_not_cache_job_missing_a_required_field(
 
     job = make_job(**{required_field: missing_value})
     cache = FakeJobCache()
-    client = FakePublicClient()
-    monkeypatch.setattr("app.services.job_details.parse_job_detail_html", lambda *_: job)
+    client = FakeAuthenticatedClient()
+    monkeypatch.setattr("app.services.job_details.parse_job_detail_voyager", lambda *_: job)
 
     response = asyncio.run(JobDetailService(client, cache).get_job(JOB_ID))
 

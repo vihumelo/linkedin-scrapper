@@ -20,7 +20,6 @@ def make_job(job_id: str, title: str = "Técnico de laboratório") -> JobDetail:
         location="São Paulo, Brasil",
         url=f"https://www.linkedin.com/jobs/view/{job_id}/",
         description_text="Descrição completa da vaga.",
-        description_html="<p>Descrição completa da vaga.</p>",
     )
 
 
