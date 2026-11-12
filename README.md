@@ -1,7 +1,7 @@
 # LinkedIn Scrapper
 
-A FastAPI service for LinkedIn job search and structured job details. It parses LinkedIn HTML and
-caches complete job details in SQLite.
+A FastAPI service for LinkedIn job search and structured job details. It parses LinkedIn search HTML
+and authenticated Voyager job detail JSON, and caches complete job details in SQLite.
 
 ## Setup
 
@@ -16,8 +16,8 @@ python -m pip install -e ".[dev]"
 cp .env.example .env
 ```
 
-Set `LINKEDIN_LI_AT` and `LINKEDIN_JSESSIONID` in `.env` to enable authenticated search. Keep these
-credentials private; never commit `.env`.
+Set `LINKEDIN_LI_AT` and `LINKEDIN_JSESSIONID` in `.env` to enable authenticated search and job
+details. Keep these credentials private; never commit `.env`.
 
 Start the API:
 
@@ -48,11 +48,12 @@ Optional parameters: `geo_id` (default `90009574`, Greater São Paulo Area), `f_
 
 ### Job details
 
-`GET /api/jobs/{job_id}` checks the cache before requesting LinkedIn. IDs must use ASCII digits.
+`GET /api/job/{job_id}` checks the cache before requesting LinkedIn's authenticated Voyager API.
+IDs must use ASCII digits, and the LinkedIn cookies must be configured.
 
 ```bash
-curl "http://127.0.0.1:8000/api/jobs/4486249045"
-curl "http://127.0.0.1:8000/api/jobs/4486249045?refresh=true"
+curl "http://127.0.0.1:8000/api/job/4486249045"
+curl "http://127.0.0.1:8000/api/job/4486249045?refresh=true"
 ```
 
 The second request bypasses the cache and refreshes it after a successful fetch. Cached records do
@@ -63,7 +64,7 @@ present. Cache failures fall back to LinkedIn.
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `LINKEDIN_LI_AT`, `LINKEDIN_JSESSIONID` | empty | Cookies for authenticated search |
+| `LINKEDIN_LI_AT`, `LINKEDIN_JSESSIONID` | empty | Cookies for authenticated search and details |
 | `LINKEDIN_USER_AGENT` | Chrome user agent | LinkedIn request header |
 | `HTTP_TIMEOUT_SECONDS` | `30` | Upstream timeout |
 | `CACHE_BACKEND` | `sqlite` | Cache adapter |
