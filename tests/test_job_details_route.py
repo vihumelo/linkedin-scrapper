@@ -7,8 +7,17 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
+from app.clients.authenticated_client import (
+    LinkedInAuthenticationError,
+    LinkedInCredentialsError,
+    LinkedInJobNotFoundError,
+    LinkedInResponseError,
+    LinkedInServiceUnavailableError,
+    LinkedInTimeoutError,
+)
 from app.core.dependencies import get_authenticated_linkedin_client, get_job_cache
 from app.main import create_app
+from app.parsers.linkedin_voyager_job_details import JobDetailVoyagerStructureError
 from app.schemas.jobs import JobDetail
 
 JOB_ID = "4486249045"
@@ -135,3 +144,35 @@ def test_get_job_details_rejects_unicode_decimal_id(job_id: str) -> None:
         response = client.get(f"/api/job/{job_id}")
 
     assert response.status_code == 422
+
+
+@pytest.mark.parametrize(
+    ("upstream_error", "expected_status"),
+    [
+        (LinkedInJobNotFoundError("not found"), 404),
+        (LinkedInCredentialsError("missing credentials"), 503),
+        (LinkedInServiceUnavailableError("unavailable"), 503),
+        (LinkedInTimeoutError("timed out"), 504),
+        (LinkedInAuthenticationError("unauthorized"), 502),
+        (LinkedInResponseError("invalid response"), 502),
+        (JobDetailVoyagerStructureError("invalid structure"), 502),
+    ],
+)
+def test_get_job_details_maps_upstream_errors(
+    upstream_error: Exception,
+    expected_status: int,
+) -> None:
+    """Converts integration and parser errors into the documented HTTP statuses."""
+
+    class FailingClient:
+        async def get_job_details(self, job_id: str) -> dict[str, object]:
+            raise upstream_error
+
+    app = create_app()
+    app.dependency_overrides[get_authenticated_linkedin_client] = lambda: FailingClient()
+    app.dependency_overrides[get_job_cache] = lambda: FakeJobCache()
+
+    with TestClient(app) as client:
+        response = client.get(f"/api/job/{JOB_ID}")
+
+    assert response.status_code == expected_status

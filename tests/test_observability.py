@@ -26,13 +26,12 @@ def test_request_id_is_returned_and_logged_without_query_values(caplog) -> None:
         FailingAuthenticatedClient()
     )
 
-    with caplog.at_level(logging.INFO):
-        with TestClient(app) as client:
-            response = client.get(
-                "/api/jobs/search",
-                params={"keywords": "termo privado", "geo_id": "106057199"},
-                headers={"X-Request-ID": "trace-abc_123"},
-            )
+    with caplog.at_level(logging.INFO), TestClient(app) as client:
+        response = client.get(
+            "/api/jobs/search",
+            params={"keywords": "termo privado", "geo_id": "106057199"},
+            headers={"X-Request-ID": "trace-abc_123"},
+        )
 
     assert response.status_code == 500
     assert response.headers["X-Request-ID"] == "trace-abc_123"

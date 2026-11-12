@@ -198,3 +198,92 @@ def test_rejects_unicode_digits_in_job_ids(identifier_attribute: str) -> None:
 
     with pytest.raises(HTMLStructureError):
         parse_job_search_html(html, start=0)
+
+
+def test_pagination_uses_accessible_page_labels() -> None:
+    """Reads the active and last page from accessible labels in a pagination nav."""
+
+    html = """
+    <div componentkey="job-card-component-ref-123">
+      <p><span aria-hidden="true">Vaga de teste</span></p>
+      <p>Empresa</p><p>São Paulo, Brasil</p>
+    </div>
+    <nav aria-label="Pagination">
+      <button aria-label="Page 2" aria-current="page">2</button>
+      <a title="Page 5" aria-current="false">5</a>
+    </nav>
+    """
+
+    _, has_next = parse_job_search_html(html, start=25)
+
+    assert has_next is True
+
+
+def test_pagination_reports_disabled_next_control() -> None:
+    """Returns False when an explicitly labeled next control is disabled."""
+
+    html = """
+    <div componentkey="job-card-component-ref-123">
+      <p><span aria-hidden="true">Vaga de teste</span></p>
+      <p>Empresa</p><p>São Paulo, Brasil</p>
+    </div>
+    <nav aria-label="Pagination"><button aria-label="Next" disabled>Next</button></nav>
+    """
+
+    _, has_next = parse_job_search_html(html, start=0)
+
+    assert has_next is False
+
+
+def test_pagination_detects_next_control_by_offset() -> None:
+    """Recognizes a pagination link with an offset greater than the current start."""
+
+    html = """
+    <div componentkey="job-card-component-ref-123">
+      <p><span aria-hidden="true">Vaga de teste</span></p>
+      <p>Empresa</p><p>São Paulo, Brasil</p>
+    </div>
+    <nav aria-label="Pagination"><a href="?start=25">Resultados</a></nav>
+    """
+
+    _, has_next = parse_job_search_html(html, start=0)
+
+    assert has_next is True
+
+
+def test_conflicting_pagination_roots_leave_next_state_unknown() -> None:
+    """Returns None when pagination roots disagree about the active page."""
+
+    html = """
+    <div componentkey="job-card-component-ref-123">
+      <p><span aria-hidden="true">Vaga de teste</span></p>
+      <p>Empresa</p><p>São Paulo, Brasil</p>
+    </div>
+    <ul data-testid="pagination-controls-list">
+      <button data-testid="pagination-indicator-0" aria-current="true">1</button>
+      <button data-testid="pagination-indicator-1">2</button>
+    </ul>
+    <ul data-testid="pagination-controls-list">
+      <button data-testid="pagination-indicator-0">1</button>
+      <button data-testid="pagination-indicator-1" aria-current="true">2</button>
+    </ul>
+    """
+
+    _, has_next = parse_job_search_html(html, start=0)
+
+    assert has_next is None
+
+
+def test_legacy_card_uses_location_class() -> None:
+    """Finds a location in legacy cards using a CSS class when no semantic ID exists."""
+
+    html = """
+    <div data-entity-urn="urn:li:jobPosting:789">
+      <h3>Técnica de laboratório</h3><h4>Laboratório Central</h4>
+      <span class="job-search-card__location">Curitiba, Brasil</span>
+    </div>
+    """
+
+    jobs, _ = parse_job_search_html(html, start=0)
+
+    assert jobs[0].location == "Curitiba, Brasil"

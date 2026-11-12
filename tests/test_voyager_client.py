@@ -10,7 +10,9 @@ from app.clients.authenticated_client import (
     LinkedInAuthenticationError,
     LinkedInCredentialsError,
     LinkedInJobNotFoundError,
+    LinkedInResponseError,
     LinkedInServiceUnavailableError,
+    LinkedInTimeoutError,
 )
 from app.core.config import Settings
 
@@ -112,6 +114,66 @@ def test_get_job_details_requires_credentials_before_request() -> None:
                 Settings(linkedin_li_at="", linkedin_jsessionid=""),
             )
             with pytest.raises(LinkedInCredentialsError, match="cookies de autenticação"):
+                await client.get_job_details(JOB_ID)
+
+    asyncio.run(call_client())
+
+
+@pytest.mark.parametrize(
+    ("network_error", "expected_error"),
+    [
+        (httpx.ReadTimeout, LinkedInTimeoutError),
+        (httpx.ConnectError, LinkedInResponseError),
+    ],
+)
+def test_get_job_details_maps_network_errors(
+    network_error: type[httpx.RequestError],
+    expected_error: type[Exception],
+) -> None:
+    """Maps upstream timeouts and transport failures to safe integration errors."""
+
+    def fail_request(request: httpx.Request) -> httpx.Response:
+        raise network_error("network failure", request=request)
+
+    async def call_client() -> None:
+        settings = Settings(linkedin_li_at="li-at-test", linkedin_jsessionid="session-test")
+        async with httpx.AsyncClient(transport=httpx.MockTransport(fail_request)) as http_client:
+            client = AuthenticatedLinkedInClient(http_client, settings)
+            with pytest.raises(expected_error):
+                await client.get_job_details(JOB_ID)
+
+    asyncio.run(call_client())
+
+
+@pytest.mark.parametrize(
+    ("status_code", "content_type", "body"),
+    [
+        (400, JSON_CONTENT_TYPE, '{"error": "bad request"}'),
+        (200, "text/html", "<html>not JSON</html>"),
+        (200, JSON_CONTENT_TYPE, "{invalid json"),
+        (200, JSON_CONTENT_TYPE, "[]"),
+    ],
+)
+def test_get_job_details_rejects_invalid_upstream_responses(
+    status_code: int,
+    content_type: str,
+    body: str,
+) -> None:
+    """Rejects HTTP errors, invalid media types, malformed JSON, and non-object payloads."""
+
+    def return_response(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            status_code,
+            text=body,
+            headers={"content-type": content_type},
+            request=request,
+        )
+
+    async def call_client() -> None:
+        settings = Settings(linkedin_li_at="li-at-test", linkedin_jsessionid="session-test")
+        async with httpx.AsyncClient(transport=httpx.MockTransport(return_response)) as http_client:
+            client = AuthenticatedLinkedInClient(http_client, settings)
+            with pytest.raises(LinkedInResponseError):
                 await client.get_job_details(JOB_ID)
 
     asyncio.run(call_client())
