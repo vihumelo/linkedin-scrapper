@@ -1,0 +1,348 @@
+{
+  "data": {
+    "standardizedTitle": "urn:li:fs_title:REDACTED",
+    "companyDetails": {
+      "company": "[EMPRESA REDIGIDA]",
+      "*companyResolutionResult": "urn:li:fs_normalized_company:REDACTED",
+      "$recipeTypes": [
+        "com.linkedin.voyager.deco.jobs.web.shared.WebJobPostingCompany"
+      ],
+      "$type": "com.linkedin.voyager.jobs.JobPostingCompany"
+    },
+    "matchType": null,
+    "employmentStatus": "urn:li:fs_employmentStatus:FULL_TIME",
+    "ownerViewEnabled": false,
+    "skillMatches": null,
+    "hiringDashboardViewEnabled": false,
+    "trackingPixelUrl": null,
+    "talentHubJob": false,
+    "formattedLocation": "São Paulo, Brazil",
+    "companyDescription": null,
+    "jobPostingUrl": "[DADO REDIGIDO]",
+    "applies": 0,
+    "*allJobHiringTeamMembersInjectionResult": "urn:li:fs_jobHiringTeam:REDACTED",
+    "workplaceTypesResolutionResults": {
+      "*urn:li:fs_workplaceType:1": "urn:li:fs_workplaceType:REDACTED"
+    },
+    "poster": null,
+    "dashEntityUrn": "urn:li:fsd_jobPosting:REDACTED",
+    "*employmentStatusResolutionResult": "urn:li:fs_employmentStatus:FULL_TIME",
+    "eligibleForLearningCourseRecsUpsell": true,
+    "eligibleForSharingProfileWithPoster": true,
+    "trustReviewDecision": null,
+    "originalListedAt": 1793968839000,
+    "entityUrn": "urn:li:fs_normalized_jobPosting:REDACTED",
+    "workRemoteAllowed": false,
+    "applyMethod": {
+      "companyApplyUrl": "[DADO REDIGIDO]",
+      "applyStartersPreferenceVoid": true,
+      "inPageOffsiteApply": false,
+      "$type": "com.linkedin.voyager.jobs.OffsiteApply"
+    },
+    "benefitsDataSource": "JOB_POSTER",
+    "*savingInfo": "urn:li:fs_jobSavingInfo:REDACTED",
+    "draftApplicationInfo": null,
+    "formattedJobFunctions": [],
+    "messagingStatus": null,
+    "dashJobPostingCardUrn": "urn:li:fsd_jobPostingCard:(REDACTED,JOB_DETAILS)",
+    "locationVisibility": "ADDRESS",
+    "appeal": null,
+    "expireAt": 1809520839000,
+    "$recipeTypes": [
+      "com.linkedin.voyager.deco.jobs.web.shared.WebFullJobPosting"
+    ],
+    "$type": "com.linkedin.voyager.jobs.JobPosting",
+    "standardizedAddresses": null,
+    "claimableByViewer": false,
+    "inferredBenefits": null,
+    "formattedIndustries": [],
+    "industries": [
+      14
+    ],
+    "salaryInsights": {
+      "lockModuleShown": false,
+      "salaryExplorerUrl": "[DADO REDIGIDO]",
+      "insightExists": false,
+      "jobCompensationAvailable": true,
+      "$type": "com.linkedin.voyager.premium.SalaryInsights"
+    },
+    "country": "urn:li:fs_country:br",
+    "jobPosterEntitlements": {
+      "entitledToCopyJob": true,
+      "entitledToAccessJobDashboard": true,
+      "$type": "com.linkedin.voyager.jobs.JobPosterEntitlements",
+      "entitledToViewFreeJobInfo": false,
+      "entitledToPromoteJob": false,
+      "entitledToEditJob": true,
+      "entitledToViewBillingInfo": true
+    },
+    "*applyingInfo": "urn:li:fs_jobApplyingInfo:REDACTED",
+    "locationUrn": "urn:li:fs_geo:REDACTED",
+    "jobApplicationLimitReached": false,
+    "closedAt": null,
+    "new": false,
+    "applicantTrackingSystem": null,
+    "workplaceTypes": [
+      "urn:li:fs_workplaceType:REDACTED"
+    ],
+    "contentSource": "JOBS_PREMIUM",
+    "postalAddress": null,
+    "messagingToken": null,
+    "formattedExperienceLevel": "",
+    "yearsOfExperienceMatch": null,
+    "jobFunctions": [
+      "ENG",
+      "IT"
+    ],
+    "benefits": [],
+    "encryptedPricingParams": "[DADO REDIGIDO]",
+    "jobState": "LISTED",
+    "trackingUrn": "urn:li:jobPosting:REDACTED",
+    "description": {
+      "attributes": [
+        {
+          "start": 0,
+          "length": 18,
+          "type": {
+            "$type": "com.linkedin.pemberly.text.Bold"
+          },
+          "attributeKindUnion": {
+            "bold": {
+              "$type": "com.linkedin.pemberly.text.Bold"
+            }
+          },
+          "$type": "com.linkedin.pemberly.text.Attribute"
+        },
+        {
+          "start": 0,
+          "length": 754,
+          "type": {
+            "$type": "com.linkedin.pemberly.text.Paragraph"
+          },
+          "attributeKindUnion": {
+            "paragraph": {
+              "$type": "com.linkedin.pemberly.text.Paragraph"
+            }
+          },
+          "$type": "com.linkedin.pemberly.text.Attribute"
+        },
+        {
+          "start": 754,
+          "length": 13,
+          "type": {
+            "$type": "com.linkedin.pemberly.text.Bold"
+          },
+          "attributeKindUnion": {
+            "bold": {
+              "$type": "com.linkedin.pemberly.text.Bold"
+            }
+          },
+          "$type": "com.linkedin.pemberly.text.Attribute"
+        },
+        {
+          "start": 754,
+          "length": 13,
+          "type": {
+            "$type": "com.linkedin.pemberly.text.Paragraph"
+          },
+          "attributeKindUnion": {
+            "paragraph": {
+              "$type": "com.linkedin.pemberly.text.Paragraph"
+            }
+          },
+          "$type": "com.linkedin.pemberly.text.Attribute"
+        },
+        {
+          "start": 767,
+          "length": 150,
+          "type": {
+            "$type": "com.linkedin.pemberly.text.ListItem"
+          },
+          "attributeKindUnion": {
+            "listItem": {
+              "$type": "com.linkedin.pemberly.text.ListItem"
+            }
+          },
+          "$type": "com.linkedin.pemberly.text.Attribute"
+        },
+        {
+          "start": 917,
+          "length": 95,
+          "type": {
+            "$type": "com.linkedin.pemberly.text.ListItem"
+          },
+          "attributeKindUnion": {
+            "listItem": {
+              "$type": "com.linkedin.pemberly.text.ListItem"
+            }
+          },
+          "$type": "com.linkedin.pemberly.text.Attribute"
+        },
+        {
+          "start": 767,
+          "length": 245,
+          "type": {
+            "ordered": false,
+            "$type": "com.linkedin.pemberly.text.List"
+          },
+          "attributeKindUnion": {
+            "list": {
+              "ordered": false,
+              "$type": "com.linkedin.pemberly.text.List"
+            }
+          },
+          "$type": "com.linkedin.pemberly.text.Attribute"
+        }
+      ],
+      "text": "Descrição do cargo o cargo de técnico em engenharia clínica na [NOME REDIGIDO] envolve a realização de atividades de manutenção preventiva e corretiva em equipamentos médico-hospitalares garantindo seu funcionamento seguro e eficiente. no dia a dia a pessoa profissional realiza calibrações testes de desempenho diagnósticos de falhas e ajustes técnicos conforme normas técnicas e requisitos dos fabricantes. também apoia equipes assistenciais na correta utilização dos equipamentos registra atividades em sistemas de controle e elabora relatórios técnicos. o cargo é de tempo integral com atuação presencial em são paulo brasil podendo envolver deslocamentos entre unidades de atendimento e interação constante com equipes multidisciplinares.Qualificaçõesexperiência em manutenção calibração e testes de equipamentos médico-hospitalares assegurando conformidade com normas técnicas e padrões de segurança.formação técnica em eletrônica eletrotécnica mecatrônica engenharia clínica ou áreas correlatas",
+      "$type": "com.linkedin.pemberly.text.AttributedText"
+    },
+    "hiringTeamEntitlements": null,
+    "formattedEmploymentStatus": "Full-time",
+    "repostedJobPosting": null,
+    "title": "Técnico em Engenharia Clinica",
+    "skillsDescription": null,
+    "trustReviewSla": null,
+    "jobRegion": null,
+    "thirdPartySourced": false,
+    "views": 0,
+    "*standardizedTitleResolutionResult": "urn:li:fs_title:REDACTED",
+    "eligibleForReferrals": false,
+    "listedAt": 1793968839000,
+    "degreeMatches": null,
+    "jobPostingId": 0,
+    "allowedToEdit": false,
+    "sourceDomain": null
+  },
+  "included": [
+    {
+      "trackingUrn": null,
+      "followingType": "DEFAULT",
+      "followingCount": null,
+      "$type": "com.linkedin.voyager.common.FollowingInfo",
+      "entityUrn": "urn:li:fs_followingInfo:urn:li:company:REDACTED",
+      "following": false,
+      "dashFollowingStateUrn": "urn:li:fsd_followingState:urn:li:fsd_company:REDACTED",
+      "followerCount": 2843
+    },
+    {
+      "resumeDownloadUrl": null,
+      "appliedTime": null,
+      "resumeFileType": null,
+      "entityUrn": "urn:li:fs_jobApplyingInfo:REDACTED",
+      "applied": false,
+      "activities": null,
+      "closed": false,
+      "viewedByJobPosterAt": null,
+      "resumeFileName": null,
+      "appliedAt": null,
+      "$type": "com.linkedin.voyager.entities.shared.JobApplyingInfo"
+    },
+    {
+      "saved": false,
+      "entityUrn": "urn:li:fs_jobSavingInfo:REDACTED",
+      "savedAt": null,
+      "dashSaveStateUrn": "urn:li:fsd_saveState:(SAVE,urn:li:fsd_jobPosting:REDACTED)",
+      "$type": "com.linkedin.voyager.entities.shared.JobSavingInfo"
+    },
+    {
+      "entityUrn": "urn:li:fs_jobHiringTeam:REDACTED",
+      "hiringTeamMembers": [],
+      "$recipeTypes": [
+        "com.linkedin.voyager.deco.jobs.web.shared.WebAllJobHiringTeamMembers"
+      ],
+      "$type": "com.linkedin.voyager.jobs.JobHiringTeam"
+    },
+    {
+      "localizedName": "[EMPRESA REDIGIDA]",
+      "entityUrn": "urn:li:fs_employmentStatus:FULL_TIME",
+      "$recipeTypes": [
+        "com.linkedin.voyager.deco.jobs.shared.WebFullEmploymentStatus"
+      ],
+      "$type": "com.linkedin.voyager.jobs.shared.EmploymentStatus"
+    },
+    {
+      "localizedName": "[EMPRESA REDIGIDA]",
+      "entityUrn": "urn:li:fs_title:REDACTED",
+      "$recipeTypes": [
+        "com.linkedin.voyager.deco.jobs.web.shared.WebFullTitle"
+      ],
+      "$type": "com.linkedin.voyager.jobs.shared.Title"
+    },
+    {
+      "localizedName": "On-site",
+      "entityUrn": "urn:li:fs_workplaceType:REDACTED",
+      "$recipeTypes": [
+        "com.linkedin.voyager.deco.jobs.shared.WebJobDetailsWorkplaceType"
+      ],
+      "$type": "com.linkedin.voyager.jobs.shared.WorkplaceType"
+    },
+    {
+      "description": "Somos a [EMPRESA REDIGIDA], empresa nacional que atua em todo o território brasileiro. Nossos serviços atendem órgãos públicos e privados.A [EMPRESA REDIGIDA] tem em seu escopo principal, serviços especializados em equipamentos médicos e para laboratórios de análises clínicas.\n\nNossas soluções, garantem qualidade e confiabilidade nos resultados, com sistema de gestão da qualidade atendemos a norma NBR ISO-IEC17025 e somos certificados pela ABNT ISO9001 2008. Seguimos diretrizes estabelecidas pelas redes de acreditação ONA - Organização Nacional de Acreditação e pela Acreditação Internacional JOINT COMMISION. Garantimos dessa forma todos os laudos compatíveis e compulsórios legais para seu parque de equipamentos. \nNossos serviços são:\n\nCalibração de Equipamentos\nSegurança Elétrica \nSistema de Gerenciamento Metrológico\nQualificação Térmica \nEngenharia Clínica \nTreinamentos",
+      "staffCount": 104,
+      "viewerFollowingJobsUpdates": false,
+      "entityUrn": "urn:li:fs_normalized_company:REDACTED",
+      "staffCountRange": {
+        "start": 51,
+        "end": 200,
+        "$type": "com.linkedin.voyager.organization.shared.StaffCountRange"
+      },
+      "headquarter": {
+        "geographicArea": "Sao Paulo",
+        "country": "BR",
+        "city": "Santo André ",
+        "postalCode": "09030640",
+        "line1": "Rua Florianopolis, 171",
+        "$type": "com.linkedin.common.Address"
+      },
+      "logo": {
+        "image": {
+          "isStandardDynamicRangeEnforced": true,
+          "digitalmediaAsset": "urn:li:digitalmediaAsset:D4E0BAQE71ZHB3M8MRA",
+          "$type": "com.linkedin.common.VectorImage",
+          "rootUrl": "[DADO REDIGIDO]",
+          "artifacts": [
+            {
+              "width": 200,
+              "expiresAt": 1796256000000,
+              "fileIdentifyingUrlPathSegment": "[DADO REDIGIDO]",
+              "$type": "com.linkedin.common.VectorArtifact",
+              "height": 200
+            },
+            {
+              "width": 100,
+              "expiresAt": 1796256000000,
+              "fileIdentifyingUrlPathSegment": "[DADO REDIGIDO]",
+              "$type": "com.linkedin.common.VectorArtifact",
+              "height": 100
+            },
+            {
+              "width": 400,
+              "expiresAt": 1796256000000,
+              "fileIdentifyingUrlPathSegment": "[DADO REDIGIDO]",
+              "$type": "com.linkedin.common.VectorArtifact",
+              "height": 400
+            }
+          ]
+        },
+        "type": "SQUARE_LOGO",
+        "$type": "com.linkedin.voyager.organization.CompanyLogoImage"
+      },
+      "universalName": "[NOME REDIGIDO]",
+      "specialities": [],
+      "coverPhoto": null,
+      "*followingInfo": "urn:li:fs_followingInfo:urn:li:company:REDACTED",
+      "$recipeTypes": [
+        "com.linkedin.voyager.deco.organization.shared.WebJobCompany"
+      ],
+      "url": "[DADO REDIGIDO]",
+      "$type": "com.linkedin.voyager.organization.Company",
+      "lcpTreatment": false,
+      "industries": [
+        "Hospitals and Health Care"
+      ],
+      "name": "[EMPRESA REDIGIDA]",
+      "backgroundCoverImage": null
+    }
+  ]
+}

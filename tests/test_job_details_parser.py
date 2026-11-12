@@ -1,54 +1,65 @@
-"""Tests for the details parser based on a real LinkedIn HTML snippet."""
+"""Tests for extracting details from LinkedIn Voyager JSON."""
 
+import json
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
 
-from app.parsers.linkedin_job_details import (
-    JobDetailHTMLStructureError,
-    parse_job_detail_html,
+from app.parsers.linkedin_voyager_job_details import (
+    JobDetailVoyagerStructureError,
+    parse_job_detail_voyager,
 )
 
-FIXTURE_PATH = Path(__file__).parent / "fixtures" / "linkedin_job_detail.html"
+FIXTURE_PATH = Path(__file__).parent / "fixtures" / "linkedin_job_detail_voyager.json"
 
 
-def test_parse_real_job_detail_html() -> None:
-    """Extracts fields and criteria from real HTML preserved as a fixture."""
+def test_parse_voyager_job_detail_fixture() -> None:
+    """Parses the complete sanitized Voyager response while preserving its structure."""
 
-    html = FIXTURE_PATH.read_text(encoding="utf-8")
-    job = parse_job_detail_html(html, "4486249045")
+    fixture_text = FIXTURE_PATH.read_text(encoding="utf-8")
+    payload = json.loads(fixture_text)
+    job = parse_job_detail_voyager(payload, "1234567890")
 
-    assert job.id == "4486249045"
+    assert len(payload) == 2
+    assert len(payload["data"]) >= 70
+    assert len(payload["included"]) == 8
+    assert "4486249045" not in fixture_text
+    assert "[NOME REDIGIDO]" in fixture_text
+    assert "https://" not in fixture_text
+    assert job.id == "1234567890"
     assert job.title == "Técnico em Engenharia Clinica"
-    assert job.company == "CALIBRAMED ENGENHARIA LTDA"
-    assert job.location == "São Paulo, Brasil"
-    assert job.posted_text == "Há 4 dias"
-    assert job.seniority_level == "Assistente"
-    assert job.employment_type == "Tempo integral"
-    assert job.industry == "Hospitais e atividades de atenção à saúde humana"
-    assert job.description_text is not None and len(job.description_text) > 500
-    assert job.description_html is not None and "<p>" in job.description_html
-    assert "31 candidaturas" not in (job.location or "")
+    assert job.company == "[EMPRESA REDIGIDA]"
+    assert job.location == "São Paulo, Brazil"
+    assert job.posted == datetime.fromtimestamp(1793968839, UTC).isoformat()
+    assert job.seniority_level is None
+    assert job.employment_type == payload["data"]["formattedEmploymentStatus"]
+    assert job.industry == "Hospitals and Health Care"
+    assert job.workplace_type == "On-site"
+    assert job.description_text is not None
+    assert "[NOME REDIGIDO]" in job.description_text
 
 
-def test_rejects_partial_markup_with_only_posted_time() -> None:
-    """Rejects partial markup that contains none of the job’s core fields."""
+def test_rejects_voyager_payload_without_recognized_job_fields() -> None:
+    """Rejects payloads that contain no title or description."""
 
-    html = '<span class="posted-time-ago__text">Há 4 dias</span>'
-
-    with pytest.raises(JobDetailHTMLStructureError):
-        parse_job_detail_html(html, "4486249045")
+    with pytest.raises(JobDetailVoyagerStructureError):
+        parse_job_detail_voyager({"data": {"formattedPostedAt": "Posted yesterday"}}, "123")
 
 
-def test_accepts_recognized_job_with_optional_fields_missing() -> None:
-    """Keeps optional fields null when the page contains a valid title."""
+def test_accepts_title_when_optional_fields_are_missing() -> None:
+    """Keeps optional fields null for a recognized job with only a title."""
 
-    html = '<h2 class="topcard__title">Vaga reconhecida</h2>'
-
-    job = parse_job_detail_html(html, "4486249045")
+    job = parse_job_detail_voyager({"data": {"title": "Vaga reconhecida"}}, "123")
 
     assert job.title == "Vaga reconhecida"
     assert job.company is None
     assert job.location is None
     assert job.description_text is None
-    assert job.description_html is None
+
+
+def test_rejects_non_object_data() -> None:
+    """Rejects malformed response data before attempting to extract fields."""
+
+    with pytest.raises(JobDetailVoyagerStructureError):
+        parse_job_detail_voyager({"data": []}, "123")
