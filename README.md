@@ -36,11 +36,15 @@ Docs: <http://127.0.0.1:8000/docs>
 ```bash
 curl -G "http://127.0.0.1:8000/api/jobs/search" \
   --data-urlencode "keywords=biomedicina" \
+  --data-urlencode "geo_id=90009574" \
+  --data-urlencode "f_TPR=r86400" \
   --data-urlencode "start=0"
 ```
 
-Optional parameters: `geo_id` (default `106057199`) and `start` (default `0`). The response
-contains `query`, `pagination`, and `jobs`.
+Optional parameters: `geo_id` (default `90009574`, Greater São Paulo Area), `f_TPR` (default
+`r2592000`, past 30 days), and `start` (default `0`). The supported `f_TPR` values are `r86400`
+(past 24 hours), `r604800` (past week), and `r2592000` (past 30 days). The response contains
+`query`, `pagination`, and `jobs`, including the applied `f_tpr` value in `query`.
 
 ### Job details
 

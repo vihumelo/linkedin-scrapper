@@ -1,6 +1,7 @@
 """Routes for operations on job collections."""
 
 import logging
+from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
@@ -23,7 +24,11 @@ router = APIRouter(prefix="/jobs", tags=["jobs"])
 @router.get("/search", response_model=JobSearchResponse)
 async def search_jobs(
     keywords: str = Query(..., min_length=1),
-    geo_id: str = Query("106057199", min_length=1),
+    geo_id: str = Query("90009574", min_length=1),
+    f_tpr: Literal["r86400", "r604800", "r2592000"] = Query(
+        "r2592000",
+        alias="f_TPR",
+    ),
     start: int = Query(0, ge=0),
     linkedin_client: AuthenticatedLinkedInClient = Depends(get_authenticated_linkedin_client),
 ) -> JobSearchResponse:
@@ -36,7 +41,7 @@ async def search_jobs(
         )
 
     try:
-        return await JobSearchService(linkedin_client).search(keywords, geo_id, start)
+        return await JobSearchService(linkedin_client).search(keywords, geo_id, f_tpr, start)
     except LinkedInCredentialsError as exc:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,

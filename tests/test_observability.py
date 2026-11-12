@@ -12,7 +12,7 @@ from app.main import create_app
 class FailingAuthenticatedClient:
     """Fake client that raises an unexpected error during the search."""
 
-    async def search_jobs(self, keywords: str, geo_id: str, start: int) -> str:
+    async def search_jobs(self, keywords: str, geo_id: str, f_tpr: str, start: int) -> str:
         """Simulates an unhandled exception from the external service."""
 
         raise RuntimeError("falha interna simulada")
