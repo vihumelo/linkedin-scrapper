@@ -34,12 +34,15 @@ def test_linkedin_search_integration() -> None:
                 AuthenticatedLinkedInClient(http_client, settings)
             ).search(
                 keywords="biomedicina",
-                geo_id="106057199",
+                geo_id="90009574",
+                f_tpr="r2592000",
                 start=0,
             )
 
         job_ids = [job.id for job in response.jobs]
         assert response.query.keywords == "biomedicina"
+        assert response.query.geo_id == "90009574"
+        assert response.query.f_tpr == "r2592000"
         assert response.pagination.count == len(response.jobs)
         assert response.jobs, "A busca online não retornou vagas."
         assert len(job_ids) == len(set(job_ids)), "A resposta contém IDs de vaga duplicados."

@@ -41,7 +41,7 @@ class AuthenticatedLinkedInClient:
         self._http_client = http_client
         self._settings = settings
 
-    async def search_jobs(self, keywords: str, geo_id: str, start: int) -> str:
+    async def search_jobs(self, keywords: str, geo_id: str, f_tpr: str, start: int) -> str:
         """Requests the LinkedIn results HTML page for the supplied parameters."""
 
         if not self._settings.linkedin_li_at or not self._settings.linkedin_jsessionid:
@@ -62,6 +62,7 @@ class AuthenticatedLinkedInClient:
                 params={
                     "keywords": keywords,
                     "geoId": geo_id,
+                    "f_TPR": f_tpr,
                     "origin": "SEMANTIC_SEARCH_LANDING_PAGE",
                     "start": start,
                 },

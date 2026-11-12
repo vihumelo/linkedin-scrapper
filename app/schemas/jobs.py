@@ -12,6 +12,7 @@ class JobQuery(BaseModel):
 
     keywords: str
     geo_id: str
+    f_tpr: Literal["r86400", "r604800", "r2592000"]
 
 
 class JobPagination(BaseModel):
