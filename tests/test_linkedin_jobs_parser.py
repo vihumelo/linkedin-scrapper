@@ -7,6 +7,7 @@ import pytest
 from app.parsers.linkedin_jobs import HTMLStructureError, parse_job_search_html
 
 FIXTURE_PATH = Path(__file__).parent / "fixtures" / "linkedin_job_search.html"
+EMPTY_FIXTURE_PATH = Path(__file__).parent / "fixtures" / "linkedin_job_search_empty.html"
 
 
 def test_parse_full_sanitized_real_job_search_response() -> None:
@@ -22,6 +23,47 @@ def test_parse_full_sanitized_real_job_search_response() -> None:
     assert has_next is True
     assert "EMPRESA REDIGIDA" in html
     assert "linkedin.com" not in html.casefold()
+
+
+def test_parse_real_no_results_page_as_empty_last_page() -> None:
+    """Treats the real LinkedIn no-results page as an empty final page."""
+
+    html = EMPTY_FIXTURE_PATH.read_text(encoding="utf-8")
+    jobs, has_next = parse_job_search_html(html, start=0)
+
+    assert jobs == []
+    assert has_next is False
+
+
+def test_parse_no_results_page_past_the_last_page() -> None:
+    """Ends pagination when an offset past the last job shows the no-results state."""
+
+    html = """
+    <div componentkey="searchResultsHeaderComponent"><p>13 resultados</p></div>
+    <section>
+      <h2>Nenhum resultado encontrado</h2>
+      <p>Tente diminuir ou reescrever seus termos de pesquisa.</p>
+    </section>
+    """
+
+    jobs, has_next = parse_job_search_html(html, start=975)
+
+    assert jobs == []
+    assert has_next is False
+
+
+def test_no_results_text_inside_scripts_does_not_count_as_empty_state() -> None:
+    """Rejects pages without cards whose only no-results text is script data."""
+
+    html = """
+    <html><body>
+      <div>Unexpected layout</div>
+      <script>{"emptyState": "Nenhum resultado encontrado"}</script>
+    </body></html>
+    """
+
+    with pytest.raises(HTMLStructureError):
+        parse_job_search_html(html, start=0)
 
 
 def test_parse_componentkey_cards_and_deduplicate_ids() -> None:
@@ -81,7 +123,7 @@ def test_empty_state_is_valid_but_unknown_html_is_an_error() -> None:
     jobs, has_next = parse_job_search_html("<p>Nenhuma vaga encontrada.</p>", start=0)
 
     assert jobs == []
-    assert has_next is None
+    assert has_next is False
     with pytest.raises(HTMLStructureError):
         parse_job_search_html("<html><body>conteúdo inesperado</body></html>", start=0)
 

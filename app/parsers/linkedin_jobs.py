@@ -13,7 +13,8 @@ NEXT_CONTROL_PATTERN = re.compile(
     re.IGNORECASE,
 )
 EMPTY_RESULTS_PATTERN = re.compile(
-    r"(no jobs found|no results found|nenhuma vaga|não encontramos vagas|sem resultados)",
+    r"(no jobs found|no results found|nenhuma vaga|nenhum resultado|não encontramos vagas|"
+    r"sem resultados)",
     re.IGNORECASE,
 )
 JOB_CARD_STATUS_TEXTS = {
@@ -48,7 +49,9 @@ def parse_job_search_html(html: str, start: int) -> tuple[list[JobListing], bool
 
     soup = BeautifulSoup(html, "lxml")
     cards = _find_job_cards(soup)
-    if not cards and not _has_explicit_empty_state(soup):
+    if not cards:
+        if _has_explicit_empty_state(soup):
+            return [], False
         raise HTMLStructureError("The page does not contain any recognized job cards.")
 
     jobs: list[JobListing] = []

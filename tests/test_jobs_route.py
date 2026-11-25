@@ -131,6 +131,45 @@ def test_search_jobs_combines_keyword_and_company_id() -> None:
     assert fake_client.search_requests == [("quality analyst", "1185", "90009574", "r2592000", 0)]
 
 
+class NoResultsSearchClient:
+    """Fake search client that returns LinkedIn's no-results state."""
+
+    async def search_jobs(
+        self,
+        keywords: str | None,
+        geo_id: str,
+        f_tpr: str,
+        start: int,
+        company_id: str | None = None,
+    ) -> str:
+        """Returns a results page without job cards."""
+
+        return """
+        <div componentkey="searchResultsHeaderComponent"><p>0 resultado</p></div>
+        <section><h2>Nenhum resultado encontrado</h2></section>
+        """
+
+
+def test_search_jobs_returns_empty_last_page_when_linkedin_has_no_results() -> None:
+    """Responds with an empty final page instead of an upstream format error."""
+
+    app = create_app()
+    app.dependency_overrides[get_linkedin_html_client] = lambda: NoResultsSearchClient()
+
+    with TestClient(app) as client:
+        response = client.get("/api/jobs/search", params={"company_id": "10927400"})
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["jobs"] == []
+    assert body["pagination"] == {
+        "start": 0,
+        "count": 0,
+        "next_start": None,
+        "has_next": False,
+    }
+
+
 def test_search_jobs_requires_keyword_or_company_id() -> None:
     """Rejects searches that provide neither a keyword nor a company ID."""
 
