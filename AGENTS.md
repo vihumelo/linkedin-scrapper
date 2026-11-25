@@ -44,6 +44,7 @@ Keep business logic out of route handlers.
 - Add **type hints** to all functions, methods, parameters, and return values.
 - Keep application code compatible with Pyright's strict type checking. Use precise types instead of `Any` or casts where practical, and do not silence type errors without a documented reason.
 - Write **docstrings in US English** for public modules, classes, and functions.
+- Write all project-authored source-code text in **English**. This applies to identifiers, comments, docstrings, log messages, exception and HTTP response messages, test names, assertion messages, and other strings authored as part of the code; it is not limited to class and function names or docstrings.
 - Keep variable, function, class, and file names in English, following PEP 8.
 - Prefer small, cohesive functions with a single responsibility.
 - Use Pydantic v2 for contracts and data validation.
@@ -118,5 +119,5 @@ Rules:
 - Never create commits unless explicitly requested by the user.
 - Before creating any commit, review the complete diff, including staged and unstaged changes, as a code review. Identify and report problems, then fix them before proceeding. Do not commit while known issues from the review remain unresolved.
 - After the code review and fixes, run the complete CI checks listed in Section 5. Create commits only after all checks pass; if a check cannot pass, explain why and do not present the change as CI-verified.
-- Use Conventional Commits. Keep each commit focused on one file or a cohesive group of files that implements one logical change. Split unrelated changes into separate commits; never combine all pending work into one global commit.
+- Use Conventional Commits. Each commit must contain one logical change; include multiple files only when they implement, test, or document that same change. Split unrelated work and stage only the files or hunks for the intended change.
 - After committing, inspect the commit summaries and repository status to confirm the intended files are included and no unintended changes were committed. Report the commit messages and any remaining working-tree changes.
