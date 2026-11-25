@@ -15,7 +15,7 @@ class FailingAuthenticatedClient:
     async def search_jobs(self, keywords: str, geo_id: str, f_tpr: str, start: int) -> str:
         """Simulates an unhandled exception from the external service."""
 
-        raise RuntimeError("falha interna simulada")
+        raise RuntimeError("simulated internal failure")
 
 
 def test_request_id_is_returned_and_logged_without_query_values(caplog) -> None:
@@ -29,7 +29,7 @@ def test_request_id_is_returned_and_logged_without_query_values(caplog) -> None:
     with caplog.at_level(logging.INFO), TestClient(app) as client:
         response = client.get(
             "/api/jobs/search",
-            params={"keywords": "termo privado", "geo_id": "106057199"},
+            params={"keywords": "private term", "geo_id": "106057199"},
             headers={"X-Request-ID": "trace-abc_123"},
         )
 
@@ -45,7 +45,7 @@ def test_request_id_is_returned_and_logged_without_query_values(caplog) -> None:
     assert completed.route == "/api/jobs/search"
     assert completed.status_code == 500
     assert not hasattr(completed, "query")
-    assert "termo privado" not in caplog.text
+    assert "private term" not in caplog.text
 
 
 def test_invalid_request_id_is_replaced() -> None:

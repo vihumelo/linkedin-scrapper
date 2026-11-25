@@ -24,7 +24,9 @@ class SQLiteJobCache(JobCache):
         self._schema_ready = False
         self._schema_lock = threading.Lock()
         if str(database_path) == ":memory:":
-            raise ValueError("O cache SQLite requer um arquivo para persistir entre conexões.")
+            raise ValueError(
+                "The SQLite cache requires a file to persist data between connections."
+            )
 
     async def get(self, job_id: str) -> JobDetail | None:
         """Retrieves a job by ID, returning None when it does not exist."""
@@ -32,7 +34,7 @@ class SQLiteJobCache(JobCache):
         try:
             return await asyncio.to_thread(self._get_sync, job_id)
         except (OSError, sqlite3.Error, ValidationError, ValueError) as exc:
-            raise JobCacheError("Não foi possível ler o cache SQLite de vagas.") from exc
+            raise JobCacheError("Could not read the SQLite job cache.") from exc
 
     async def save(self, job: JobDetail) -> None:
         """Inserts or updates a job and keeps timestamps in UTC."""
@@ -40,7 +42,7 @@ class SQLiteJobCache(JobCache):
         try:
             await asyncio.to_thread(self._save_sync, job)
         except (OSError, sqlite3.Error, ValidationError, ValueError) as exc:
-            raise JobCacheError("Não foi possível gravar no cache SQLite de vagas.") from exc
+            raise JobCacheError("Could not write to the SQLite job cache.") from exc
 
     async def delete(self, job_id: str) -> None:
         """Removes a job by ID without error when it is not stored."""
@@ -48,7 +50,7 @@ class SQLiteJobCache(JobCache):
         try:
             await asyncio.to_thread(self._delete_sync, job_id)
         except (OSError, sqlite3.Error) as exc:
-            raise JobCacheError("Não foi possível remover do cache SQLite de vagas.") from exc
+            raise JobCacheError("Could not remove the job from the SQLite cache.") from exc
 
     def _get_sync(self, job_id: str) -> JobDetail | None:
         with self._connection() as connection:
@@ -60,7 +62,7 @@ class SQLiteJobCache(JobCache):
             return None
         job = JobDetail.model_validate_json(row[0])
         if job.id != job_id:
-            raise ValueError("O ID persistido não corresponde à chave do cache.")
+            raise ValueError("The persisted ID does not match the cache key.")
         return job
 
     def _save_sync(self, job: JobDetail) -> None:

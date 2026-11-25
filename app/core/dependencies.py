@@ -14,7 +14,7 @@ def create_job_cache(settings: Settings) -> JobCache:
     backend = settings.cache_backend.casefold().strip()
     if backend == "sqlite":
         return SQLiteJobCache(settings.cache_sqlite_path)
-    raise ValueError(f"Backend de cache não suportado: {settings.cache_backend}.")
+    raise ValueError(f"Unsupported cache backend: {settings.cache_backend}.")
 
 
 def get_job_cache(request: Request) -> JobCache:

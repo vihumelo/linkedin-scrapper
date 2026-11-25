@@ -41,26 +41,26 @@ async def get_job_details(
     except LinkedInJobNotFoundError as exc:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="A vaga não existe ou não está mais disponível.",
+            detail="The job does not exist or is no longer available.",
         ) from exc
     except (LinkedInCredentialsError, LinkedInServiceUnavailableError) as exc:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="O serviço autenticado do LinkedIn está indisponível.",
+            detail="The authenticated LinkedIn service is unavailable.",
         ) from exc
     except LinkedInTimeoutError as exc:
         raise HTTPException(
             status_code=status.HTTP_504_GATEWAY_TIMEOUT,
-            detail="A consulta ao LinkedIn excedeu o tempo limite.",
+            detail="The LinkedIn request exceeded the time limit.",
         ) from exc
     except LinkedInAuthenticationError as exc:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
-            detail="O LinkedIn recusou a autenticação configurada.",
+            detail="LinkedIn rejected the configured authentication.",
         ) from exc
     except (LinkedInResponseError, JobDetailVoyagerStructureError) as exc:
-        logger.warning("Não foi possível interpretar os detalhes retornados pelo LinkedIn.")
+        logger.warning("Could not parse the job details returned by LinkedIn.")
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
-            detail="O LinkedIn retornou um formato de vaga inválido.",
+            detail="LinkedIn returned an invalid job format.",
         ) from exc

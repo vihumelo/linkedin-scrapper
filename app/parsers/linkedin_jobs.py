@@ -49,7 +49,7 @@ def parse_job_search_html(html: str, start: int) -> tuple[list[JobListing], bool
     soup = BeautifulSoup(html, "lxml")
     cards = _find_job_cards(soup)
     if not cards and not _has_explicit_empty_state(soup):
-        raise HTMLStructureError("A página não contém cartões de vagas reconhecidos.")
+        raise HTMLStructureError("The page does not contain any recognized job cards.")
 
     jobs: list[JobListing] = []
     seen_ids: set[str] = set()
@@ -109,7 +109,7 @@ def _parse_job_card(job_id: str, card: Tag) -> JobListing:
         ]
         if len(field_values) == 1:
             raise HTMLStructureError(
-                "O cartão contém um único campo sem marcador para empresa ou localização."
+                "The card contains one unmarked field for either company or location."
             )
         company = field_values[0] if field_values else None
         location = field_values[1] if len(field_values) > 1 else None
@@ -120,7 +120,7 @@ def _parse_job_card(job_id: str, card: Tag) -> JobListing:
         location = _find_semantic_location(card)
 
     if title is None:
-        raise HTMLStructureError("O cartão não contém um título reconhecível.")
+        raise HTMLStructureError("The card does not contain a recognizable title.")
 
     return JobListing(
         id=job_id,

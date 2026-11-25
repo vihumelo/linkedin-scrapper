@@ -27,30 +27,30 @@ class JobDetailService:
                 cached_job = await self._cache.get(job_id)
             except JobCacheError:
                 logger.warning(
-                    "Falha ao ler cache; consultando o LinkedIn.",
+                    "Failed to read the cache; querying LinkedIn.",
                     exc_info=True,
                     extra={"event": "cache.lookup", "result": "error"},
                 )
             else:
                 if cached_job is None:
                     logger.info(
-                        "Cache de detalhes não encontrou a vaga.",
+                        "The job details cache returned no match.",
                         extra={"event": "cache.lookup", "result": "miss"},
                     )
                 elif _is_cacheable(cached_job) and cached_job.id == job_id:
                     logger.info(
-                        "Detalhes retornados do cache.",
+                        "Job details returned from the cache.",
                         extra={"event": "cache.lookup", "result": "hit"},
                     )
                     return JobDetailResponse(is_cached=True, job=cached_job)
                 else:
                     logger.warning(
-                        "Cache contém detalhes incompletos ou inconsistentes.",
+                        "The cache contains incomplete or inconsistent job details.",
                         extra={"event": "cache.lookup", "result": "invalid"},
                     )
         else:
             logger.info(
-                "Leitura do cache ignorada por atualização explícita.",
+                "Cache read skipped because an explicit refresh was requested.",
                 extra={"event": "cache.lookup", "result": "bypassed", "reason": "refresh"},
             )
 
@@ -60,18 +60,18 @@ class JobDetailService:
             try:
                 await self._cache.save(job)
                 logger.info(
-                    "Detalhes da vaga gravados no cache.",
+                    "Job details saved to the cache.",
                     extra={"event": "cache.write", "result": "saved"},
                 )
             except JobCacheError:
                 logger.warning(
-                    "Falha ao gravar detalhes no cache.",
+                    "Failed to save job details to the cache.",
                     exc_info=True,
                     extra={"event": "cache.write", "result": "error"},
                 )
         else:
             logger.info(
-                "Detalhes insuficientes; cache não foi atualizado.",
+                "Job details are incomplete; the cache was not updated.",
                 extra={"event": "cache.write", "result": "skipped", "reason": "incomplete"},
             )
         return JobDetailResponse(is_cached=False, job=job)

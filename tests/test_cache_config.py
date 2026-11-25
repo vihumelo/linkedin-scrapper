@@ -26,5 +26,5 @@ def test_rejects_unknown_cache_backend() -> None:
 
     settings = Settings(cache_backend="redis")
 
-    with pytest.raises(ValueError, match="Backend de cache não suportado"):
+    with pytest.raises(ValueError, match="Unsupported cache backend"):
         create_job_cache(settings)

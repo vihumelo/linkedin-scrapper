@@ -11,13 +11,13 @@ from app.services.job_details import JobDetailService
 JOB_ID = "4486249045"
 COMPLETE_JOB_PAYLOAD = {
     "data": {
-        "title": "Técnico em Engenharia Clínica",
-        "companyDetails": {"companyName": "Empresa Exemplo"},
+        "title": "Clinical Engineering Technician",
+        "companyDetails": {"companyName": "Example Company"},
         "formattedLocation": "São Paulo, Brasil",
-        "localizedDescription": "Descrição completa da vaga.",
+        "localizedDescription": "Complete job description.",
     }
 }
-INCOMPLETE_JOB_PAYLOAD = {"data": {"title": "Vaga sem detalhes suficientes"}}
+INCOMPLETE_JOB_PAYLOAD = {"data": {"title": "Job without enough details"}}
 
 
 def make_job(**overrides: str | None) -> JobDetail:
@@ -25,11 +25,11 @@ def make_job(**overrides: str | None) -> JobDetail:
 
     fields: dict[str, str | None] = {
         "id": JOB_ID,
-        "title": "Técnico em Engenharia Clínica",
-        "company": "Empresa Exemplo",
+        "title": "Clinical Engineering Technician",
+        "company": "Example Company",
         "location": "São Paulo, Brasil",
         "url": f"https://www.linkedin.com/jobs/view/{JOB_ID}/",
-        "description_text": "Descrição completa da vaga.",
+        "description_text": "Complete job description.",
     }
     fields.update(overrides)
     return JobDetail(**fields)
@@ -113,7 +113,7 @@ def test_cache_read_failure_falls_back_to_linkedin() -> None:
 
     client = FakeAuthenticatedClient()
     cache = FakeJobCache()
-    cache.get_error = JobCacheError("cache indisponível")
+    cache.get_error = JobCacheError("cache unavailable")
 
     response = asyncio.run(JobDetailService(client, cache).get_job(JOB_ID))
 
@@ -131,7 +131,7 @@ def test_incomplete_cached_job_falls_back_to_linkedin() -> None:
 
     response = asyncio.run(JobDetailService(client, cache).get_job(JOB_ID))
 
-    assert response.job.description_text == "Descrição completa da vaga."
+    assert response.job.description_text == "Complete job description."
     assert client.requested_ids == [JOB_ID]
     assert cache.saved_jobs == [response.job]
 
@@ -141,7 +141,7 @@ def test_cache_write_failure_does_not_discard_linkedin_response() -> None:
 
     client = FakeAuthenticatedClient()
     cache = FakeJobCache()
-    cache.save_error = JobCacheError("cache indisponível")
+    cache.save_error = JobCacheError("cache unavailable")
 
     response = asyncio.run(JobDetailService(client, cache).get_job(JOB_ID))
 
@@ -157,7 +157,7 @@ def test_does_not_cache_title_only_job() -> None:
 
     response = asyncio.run(JobDetailService(client, cache).get_job(JOB_ID))
 
-    assert response.job.title == "Vaga sem detalhes suficientes"
+    assert response.job.title == "Job without enough details"
     assert cache.saved_jobs == []
 
 

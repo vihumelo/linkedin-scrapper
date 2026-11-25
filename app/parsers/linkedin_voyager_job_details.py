@@ -17,7 +17,7 @@ def parse_job_detail_voyager(payload: dict[str, JSONValue], job_id: str) -> JobD
 
     data = payload.get("data", payload)
     if not isinstance(data, dict):
-        raise JobDetailVoyagerStructureError("A resposta Voyager não contém dados da vaga.")
+        raise JobDetailVoyagerStructureError("The Voyager response does not contain job data.")
 
     title = _find_text(data, ("title", "localizedTitle", "formattedTitle"))
     description = _find_text(
@@ -26,7 +26,7 @@ def parse_job_detail_voyager(payload: dict[str, JSONValue], job_id: str) -> JobD
     )
     if title is None and description is None:
         raise JobDetailVoyagerStructureError(
-            "A resposta Voyager não contém campos reconhecidos de uma vaga."
+            "The Voyager response does not contain any recognized job fields."
         )
 
     company = _find_text(data, ("companyName", "employerName"))

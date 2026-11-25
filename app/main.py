@@ -67,7 +67,7 @@ def create_app() -> FastAPI:
             status_code = response.status_code
         except Exception:
             logger.exception(
-                "Exceção não tratada durante a requisição.",
+                "Unhandled exception while processing the request.",
                 extra={
                     "event": "http.request.exception",
                     "request_id": request_id,
@@ -77,7 +77,7 @@ def create_app() -> FastAPI:
             )
             response = JSONResponse(
                 status_code=500,
-                content={"detail": "Erro interno do servidor.", "request_id": request_id},
+                content={"detail": "Internal server error.", "request_id": request_id},
             )
 
         route_path = _route_template(request)
