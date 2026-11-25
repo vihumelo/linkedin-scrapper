@@ -124,10 +124,9 @@ ruff check app tests
 ruff format --check app tests
 ```
 
-Online tests are opt-in and call LinkedIn:
+Online tests are marked with `integration`, call LinkedIn, and are skipped unless
+`--integration` is passed. They require `LINKEDIN_LI_AT` and `LINKEDIN_JSESSIONID`:
 
 ```bash
-RUN_LINKEDIN_INTEGRATION=1 pytest tests/integration/test_linkedin_search.py
-RUN_LINKEDIN_INTEGRATION=1 pytest tests/integration/test_linkedin_company_search.py
-RUN_LINKEDIN_JOB_DETAILS_INTEGRATION=1 pytest tests/integration/test_linkedin_job_details.py
+pytest --integration
 ```

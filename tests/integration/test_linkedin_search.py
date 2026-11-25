@@ -1,11 +1,10 @@
-"""Optional online test for the real LinkedIn integration.
+"""Optional online tests for the real LinkedIn job search.
 
-Run it explicitly with:
-    RUN_LINKEDIN_INTEGRATION=1 .venv/bin/python -m pytest tests/integration/test_linkedin_search.py
+Run them explicitly with:
+    pytest --integration tests/integration/test_linkedin_search.py
 """
 
 import asyncio
-import os
 
 import pytest
 
@@ -14,22 +13,16 @@ from app.clients.linkedin_session import LinkedInSession, create_authenticated_h
 from app.core.config import Settings
 from app.services.job_search import JobSearchService
 
+pytestmark = pytest.mark.integration
 
-@pytest.mark.skipif(
-    os.getenv("RUN_LINKEDIN_INTEGRATION") != "1",
-    reason="Online test disabled; enable it explicitly with RUN_LINKEDIN_INTEGRATION=1",
-)
-def test_linkedin_search_integration() -> None:
+
+def test_linkedin_search_integration(linkedin_settings: Settings) -> None:
     """Queries real jobs and validates the essential integrated response contract."""
 
-    settings = Settings()
-    if not settings.linkedin_li_at or not settings.linkedin_jsessionid:
-        pytest.skip("LinkedIn authentication cookies are not configured in the environment")
-
     async def search() -> None:
-        async with create_authenticated_http_client(settings) as http_client:
+        async with create_authenticated_http_client(linkedin_settings) as http_client:
             response = await JobSearchService(
-                LinkedInHtmlClient(LinkedInSession(http_client, settings))
+                LinkedInHtmlClient(LinkedInSession(http_client, linkedin_settings))
             ).search(
                 keywords="software engineer",
                 geo_id="90009574",
@@ -50,21 +43,13 @@ def test_linkedin_search_integration() -> None:
     asyncio.run(search())
 
 
-@pytest.mark.skipif(
-    os.getenv("RUN_LINKEDIN_INTEGRATION") != "1",
-    reason="Online test disabled; enable it explicitly with RUN_LINKEDIN_INTEGRATION=1",
-)
-def test_linkedin_company_search_integration() -> None:
+def test_linkedin_company_search_integration(linkedin_settings: Settings) -> None:
     """Queries Pfizer jobs by company ID without sending a user keyword."""
 
-    settings = Settings()
-    if not settings.linkedin_li_at or not settings.linkedin_jsessionid:
-        pytest.skip("LinkedIn authentication cookies are not configured in the environment")
-
     async def search() -> None:
-        async with create_authenticated_http_client(settings) as http_client:
+        async with create_authenticated_http_client(linkedin_settings) as http_client:
             response = await JobSearchService(
-                LinkedInHtmlClient(LinkedInSession(http_client, settings))
+                LinkedInHtmlClient(LinkedInSession(http_client, linkedin_settings))
             ).search(
                 keywords=None,
                 geo_id="90009574",

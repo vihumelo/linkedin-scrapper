@@ -34,6 +34,9 @@ namespaces = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = [
+    "integration: online test that calls the real LinkedIn; enabled with --integration",
+]
 addopts = [
     "--strict-markers",
     "--strict-config",

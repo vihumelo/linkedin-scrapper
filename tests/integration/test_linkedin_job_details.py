@@ -1,11 +1,9 @@
 """Optional online test for the authenticated Voyager job details route.
 
 Run it explicitly with:
-    RUN_LINKEDIN_JOB_DETAILS_INTEGRATION=1 .venv/bin/python -m pytest \\
-        tests/integration/test_linkedin_job_details.py
+    pytest --integration tests/integration/test_linkedin_job_details.py
 """
 
-import os
 from datetime import datetime
 
 import pytest
@@ -14,16 +12,12 @@ from fastapi.testclient import TestClient
 from app.main import create_app
 from app.schemas.jobs import JobDetail, JobDetailResponse
 
+pytestmark = pytest.mark.integration
+
 JOB_ID = "4486249045"
 
 
-@pytest.mark.skipif(
-    os.getenv("RUN_LINKEDIN_JOB_DETAILS_INTEGRATION") != "1",
-    reason=(
-        "teste online desativado; habilite-o explicitamente com "
-        "RUN_LINKEDIN_JOB_DETAILS_INTEGRATION=1"
-    ),
-)
+@pytest.mark.usefixtures("linkedin_settings")
 def test_job_details_route_with_live_linkedin_response() -> None:
     """Queries the local route and validates the details returned by real LinkedIn."""
 
