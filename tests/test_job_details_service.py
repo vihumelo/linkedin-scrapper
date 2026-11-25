@@ -90,6 +90,7 @@ def test_returns_cached_job_without_calling_linkedin() -> None:
     response = asyncio.run(JobDetailService(client, cache).get_job(JOB_ID))
 
     assert response.job == cache.cached_job
+    assert response.is_cached is True
     assert client.requested_ids == []
 
 
@@ -102,6 +103,7 @@ def test_fetches_and_caches_complete_job_on_cache_miss() -> None:
     response = asyncio.run(JobDetailService(client, cache).get_job(JOB_ID))
 
     assert response.job.id == JOB_ID
+    assert response.is_cached is False
     assert client.requested_ids == [JOB_ID]
     assert cache.saved_jobs == [response.job]
 
@@ -116,6 +118,7 @@ def test_cache_read_failure_falls_back_to_linkedin() -> None:
     response = asyncio.run(JobDetailService(client, cache).get_job(JOB_ID))
 
     assert response.job.id == JOB_ID
+    assert response.is_cached is False
     assert client.requested_ids == [JOB_ID]
     assert cache.saved_jobs == [response.job]
 
@@ -167,6 +170,7 @@ def test_refresh_skips_cache_read_and_saves_updated_job() -> None:
     response = asyncio.run(JobDetailService(client, cache).get_job(JOB_ID, refresh=True))
 
     assert cache.get_calls == []
+    assert response.is_cached is False
     assert client.requested_ids == [JOB_ID]
     assert cache.saved_jobs == [response.job]
 

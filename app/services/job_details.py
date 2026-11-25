@@ -42,7 +42,7 @@ class JobDetailService:
                         "Detalhes retornados do cache.",
                         extra={"event": "cache.lookup", "result": "hit"},
                     )
-                    return JobDetailResponse(job=cached_job)
+                    return JobDetailResponse(is_cached=True, job=cached_job)
                 else:
                     logger.warning(
                         "Cache contém detalhes incompletos ou inconsistentes.",
@@ -74,7 +74,7 @@ class JobDetailService:
                 "Detalhes insuficientes; cache não foi atualizado.",
                 extra={"event": "cache.write", "result": "skipped", "reason": "incomplete"},
             )
-        return JobDetailResponse(job=job)
+        return JobDetailResponse(is_cached=False, job=job)
 
 
 def _is_cacheable(job: JobDetail) -> bool:

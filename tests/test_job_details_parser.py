@@ -36,6 +36,10 @@ def test_parse_voyager_job_detail_fixture() -> None:
     assert job.employment_type == payload["data"]["formattedEmploymentStatus"]
     assert job.industry == "Hospitals and Health Care"
     assert job.workplace_type == "On-site"
+    assert job.job_state == "LISTED"
+    assert job.closed_at is None
+    assert job.expires_at == datetime.fromtimestamp(1809520839, UTC).isoformat()
+    assert job.application_url == "[DADO REDIGIDO]"
     assert job.description_text is not None
     assert "[NOME REDIGIDO]" in job.description_text
 
@@ -56,6 +60,77 @@ def test_accepts_title_when_optional_fields_are_missing() -> None:
     assert job.company is None
     assert job.location is None
     assert job.description_text is None
+    assert job.job_state is None
+    assert job.closed_at is None
+    assert job.expires_at is None
+    assert job.application_url is None
+
+
+@pytest.mark.parametrize(
+    ("apply_method", "expected_url"),
+    [
+        ({"companyApplyUrl": " https://company.example/jobs/1 "}, "https://company.example/jobs/1"),
+        (
+            {"companyApplyUrl": "https://company.example/jobs/1?a=1&amp;b=2"},
+            "https://company.example/jobs/1?a=1&b=2",
+        ),
+        (
+            {"easyApplyUrl": "https://www.linkedin.com/job-apply/1"},
+            "https://www.linkedin.com/job-apply/1",
+        ),
+        (
+            {"companyApplyUrl": "", "easyApplyUrl": "https://www.linkedin.com/job-apply/1"},
+            "https://www.linkedin.com/job-apply/1",
+        ),
+        ({"companyApplyUrl": None, "easyApplyUrl": None}, None),
+        (None, None),
+    ],
+)
+def test_parses_optional_application_url(
+    apply_method: object,
+    expected_url: str | None,
+) -> None:
+    """Extracts the available company or LinkedIn application URL."""
+
+    job = parse_job_detail_voyager(
+        {"data": {"title": "Vaga", "applyMethod": apply_method}},
+        "123",
+    )
+
+    assert job.application_url == expected_url
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        (1798153715000, datetime.fromtimestamp(1798153715, UTC).isoformat()),
+        (None, None),
+        (True, None),
+        ("1798153715000", None),
+        (10**1000, None),
+    ],
+)
+def test_parses_optional_voyager_timestamps(value: object, expected: str | None) -> None:
+    """Converts valid Voyager millisecond timestamps and ignores invalid values."""
+
+    job = parse_job_detail_voyager(
+        {"data": {"title": "Vaga", "closedAt": value, "expireAt": value}},
+        "123",
+    )
+
+    assert job.closed_at == expected
+    assert job.expires_at == expected
+
+
+def test_parses_job_state_without_rewriting_unknown_values() -> None:
+    """Preserves upstream job state values for forward compatibility."""
+
+    job = parse_job_detail_voyager(
+        {"data": {"title": "Vaga", "jobState": "PAUSED_BY_LINKEDIN"}},
+        "123",
+    )
+
+    assert job.job_state == "PAUSED_BY_LINKEDIN"
 
 
 def test_rejects_non_object_data() -> None:

@@ -58,7 +58,11 @@ curl "http://127.0.0.1:8000/api/job/4486249045?refresh=true"
 
 The second request bypasses the cache and refreshes it after a successful fetch. Cached records do
 not expire. A job is cached only when `id`, `title`, `company`, `url`, and `description_text` are
-present. Cache failures fall back to LinkedIn.
+present. Cache failures fall back to LinkedIn. The response includes `is_cached` to indicate whether
+the returned details came from SQLite. Job details also include `job_state`, `closed_at`,
+`expires_at`, and `application_url`; these fields are `null` when LinkedIn does not provide them.
+Timestamps are ISO 8601 strings in UTC. The application URL is taken from the external company URL
+or LinkedIn Easy Apply URL when available.
 
 ## Configuration
 

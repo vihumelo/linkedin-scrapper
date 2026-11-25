@@ -21,6 +21,10 @@ def make_job(job_id: str, title: str = "Técnico de laboratório") -> JobDetail:
         location="São Paulo, Brasil",
         url=f"https://www.linkedin.com/jobs/view/{job_id}/",
         description_text="Descrição completa da vaga.",
+        job_state="SUSPENDED",
+        closed_at="2026-11-25T10:00:00+00:00",
+        expires_at="2026-12-24T23:08:35+00:00",
+        application_url="https://company.example/jobs/1",
     )
 
 
@@ -54,6 +58,26 @@ def test_sqlite_cache_persists_across_adapter_instances(tmp_path: Path) -> None:
 
     database_path = tmp_path / "jobs.db"
     job = make_job("persistent-job-2")
+
+    async def save_and_reload() -> JobDetail | None:
+        await SQLiteJobCache(database_path).save(job)
+        return await SQLiteJobCache(database_path).get(job.id)
+
+    assert asyncio.run(save_and_reload()) == job
+
+
+def test_sqlite_cache_preserves_null_application_metadata(tmp_path: Path) -> None:
+    """Keeps unavailable upstream application metadata null after a cache round-trip."""
+
+    database_path = tmp_path / "jobs.db"
+    job = make_job("nullable-metadata-job").model_copy(
+        update={
+            "job_state": None,
+            "closed_at": None,
+            "expires_at": None,
+            "application_url": None,
+        }
+    )
 
     async def save_and_reload() -> JobDetail | None:
         await SQLiteJobCache(database_path).save(job)

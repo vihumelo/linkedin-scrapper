@@ -75,7 +75,7 @@ def test_get_job_details_returns_structured_json() -> None:
 
     assert response.status_code == 200
     payload = response.json()
-    assert "source" not in payload
+    assert payload["is_cached"] is False
     assert payload["job"]["id"] == JOB_ID
     assert payload["job"]["title"] == "Técnico em Engenharia Clinica"
     assert payload["job"]["company"] == "[EMPRESA REDIGIDA]"
@@ -83,8 +83,39 @@ def test_get_job_details_returns_structured_json() -> None:
     assert payload["job"]["workplace_type"] == "On-site"
     assert payload["job"]["url"] == f"https://www.linkedin.com/jobs/view/{JOB_ID}/"
     assert payload["job"]["posted"] == datetime.fromtimestamp(1793968839, UTC).isoformat()
+    assert payload["job"]["job_state"] == "LISTED"
+    assert payload["job"]["closed_at"] is None
+    assert payload["job"]["expires_at"] == datetime.fromtimestamp(1809520839, UTC).isoformat()
+    assert payload["job"]["application_url"] == "[DADO REDIGIDO]"
+    assert "application_method" not in payload["job"]
     assert "description_html" not in payload["job"]
     assert "<html" not in response.text
+
+
+def test_get_job_details_marks_cache_hit() -> None:
+    """Reports when details were served from the cache without contacting LinkedIn."""
+
+    cached_job = JobDetail(
+        id=JOB_ID,
+        title="Título em cache",
+        company="Empresa em cache",
+        location="São Paulo, Brasil",
+        url=f"https://www.linkedin.com/jobs/view/{JOB_ID}/",
+        description_text="Descrição em cache.",
+    )
+    cache = FakeJobCache(cached_job)
+    app = create_app()
+    app.dependency_overrides[get_authenticated_linkedin_client] = lambda: (
+        FakeAuthenticatedLinkedInClient()
+    )
+    app.dependency_overrides[get_job_cache] = lambda: cache
+
+    with TestClient(app) as client:
+        response = client.get(f"/api/job/{JOB_ID}")
+
+    assert response.status_code == 200
+    assert response.json()["is_cached"] is True
+    assert response.json()["job"]["title"] == "Título em cache"
 
 
 def test_refresh_query_bypasses_cached_job() -> None:
@@ -110,6 +141,7 @@ def test_refresh_query_bypasses_cached_job() -> None:
         response = client.get("/api/job/4486249045?refresh=true")
 
     assert response.status_code == 200
+    assert response.json()["is_cached"] is False
     assert response.json()["job"]["title"] == "Técnico em Engenharia Clinica"
     assert cache.get_calls == []
     assert cache.saved_jobs[0].title == "Técnico em Engenharia Clinica"

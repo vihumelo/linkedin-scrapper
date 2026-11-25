@@ -2,6 +2,7 @@
 
 from collections.abc import Iterator
 from datetime import UTC, datetime
+from html import unescape
 
 from app.core.json_types import JSONValue
 from app.schemas.jobs import JobDetail
@@ -53,7 +54,43 @@ def parse_job_detail_voyager(payload: dict[str, JSONValue], job_id: str) -> JobD
         industry=_find_text(data, ("industryName", "industriesText", "industry"))
         or _industry_from_company(data, payload.get("included")),
         description_text=description,
+        job_state=_optional_text(data.get("jobState")),
+        closed_at=_timestamp(data.get("closedAt")),
+        expires_at=_timestamp(data.get("expireAt")),
+        application_url=_application_url(data.get("applyMethod")),
     )
+
+
+def _optional_text(value: JSONValue | None) -> str | None:
+    """Returns a trimmed non-empty string for an optional Voyager field."""
+
+    if not isinstance(value, str):
+        return None
+    text = value.strip()
+    return text or None
+
+
+def _timestamp(value: JSONValue | None) -> str | None:
+    """Converts a Voyager millisecond timestamp to an ISO 8601 UTC string."""
+
+    if not isinstance(value, (int, float)) or isinstance(value, bool):
+        return None
+    try:
+        return datetime.fromtimestamp(value / 1000, tz=UTC).isoformat()
+    except (OverflowError, OSError, ValueError):
+        return None
+
+
+def _application_url(value: JSONValue | None) -> str | None:
+    """Extracts an external or LinkedIn application URL from Voyager's apply method."""
+
+    if not isinstance(value, dict):
+        return None
+    for key in ("companyApplyUrl", "easyApplyUrl"):
+        url = _optional_text(value.get(key))
+        if url is not None:
+            return unescape(url)
+    return None
 
 
 def _workplace_type(data: dict[str, JSONValue], included: JSONValue | None) -> str | None:
@@ -210,9 +247,7 @@ def _posted(data: dict[str, JSONValue]) -> str | None:
 
     for key in ("listedAt", "originalListedAt"):
         value = data.get(key)
-        if isinstance(value, (int, float)) and not isinstance(value, bool):
-            try:
-                return datetime.fromtimestamp(value / 1000, tz=UTC).isoformat()
-            except (OverflowError, OSError, ValueError):
-                continue
+        timestamp = _timestamp(value)
+        if timestamp is not None:
+            return timestamp
     return None

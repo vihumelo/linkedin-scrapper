@@ -57,6 +57,10 @@ class JobDetail(JobListing):
     workplace_type: str | None = None
     industry: str | None = None
     description_text: str | None = None
+    job_state: str | None = None
+    closed_at: str | None = None
+    expires_at: str | None = None
+    application_url: str | None = None
 
 
 class JobDetailResponse(BaseModel):
@@ -64,4 +68,5 @@ class JobDetailResponse(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
+    is_cached: bool
     job: JobDetail
