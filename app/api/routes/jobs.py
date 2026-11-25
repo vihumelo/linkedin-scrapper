@@ -40,12 +40,12 @@ async def search_jobs(
 
     if keywords is not None and not keywords.strip():
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail="The keywords parameter must not contain only whitespace.",
         )
     if keywords is None and company_id is None:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail="Provide either keywords or company_id to search.",
         )
 
