@@ -1,7 +1,7 @@
 """Optional online test for the authenticated Voyager job details route.
 
 Run it explicitly with:
-    pytest --integration tests/integration/test_linkedin_job_details.py
+    pytest --integration --no-cov tests/integration/test_linkedin_job_details.py
 """
 
 from datetime import datetime

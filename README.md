@@ -124,9 +124,10 @@ ruff check app tests
 ruff format --check app tests
 ```
 
-Online tests are marked with `integration`, call LinkedIn, and are skipped unless
-`--integration` is passed. They require `LINKEDIN_LI_AT` and `LINKEDIN_JSESSIONID`:
+Online tests are marked with `integration`, call LinkedIn, and are skipped by default.
+`--integration` runs only them; `--no-cov` disables the coverage threshold, which applies to
+the offline suite. They require `LINKEDIN_LI_AT` and `LINKEDIN_JSESSIONID`:
 
 ```bash
-pytest --integration
+pytest --integration --no-cov
 ```

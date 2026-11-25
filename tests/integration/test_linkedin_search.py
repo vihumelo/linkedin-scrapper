@@ -1,7 +1,7 @@
 """Optional online tests for the real LinkedIn job search.
 
 Run them explicitly with:
-    pytest --integration tests/integration/test_linkedin_search.py
+    pytest --integration --no-cov tests/integration/test_linkedin_search.py
 """
 
 import asyncio

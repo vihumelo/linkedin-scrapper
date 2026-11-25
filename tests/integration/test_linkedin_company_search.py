@@ -1,7 +1,7 @@
 """Optional online test for the real LinkedIn company search.
 
 Run it explicitly with:
-    pytest --integration tests/integration/test_linkedin_company_search.py
+    pytest --integration --no-cov tests/integration/test_linkedin_company_search.py
 """
 
 import asyncio

@@ -12,20 +12,31 @@ def pytest_addoption(parser: pytest.Parser) -> None:
         "--integration",
         action="store_true",
         default=False,
-        help="Run online integration tests that call the real LinkedIn.",
+        help="Run only the online integration tests that call the real LinkedIn.",
     )
 
 
 def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
-    """Skips integration tests unless the --integration flag is given."""
+    """Runs only integration tests with --integration and skips them otherwise."""
+
+    integration_items = [item for item in items if is_integration(item)]
 
     if config.getoption("--integration"):
+        offline_items = [item for item in items if not is_integration(item)]
+        if offline_items:
+            config.hook.pytest_deselected(items=offline_items)
+        items[:] = integration_items
         return
 
     skip_integration = pytest.mark.skip(reason="Online test disabled; run with --integration")
-    for item in items:
-        if item.get_closest_marker("integration") is not None:
-            item.add_marker(skip_integration)
+    for item in integration_items:
+        item.add_marker(skip_integration)
+
+
+def is_integration(item: pytest.Item) -> bool:
+    """Tells whether a collected test carries the integration marker."""
+
+    return item.get_closest_marker("integration") is not None
 
 
 @pytest.fixture
