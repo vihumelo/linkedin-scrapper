@@ -1,0 +1,365 @@
+{
+  "data": {
+    "data": {
+      "searchDashClustersByAll": {
+        "metadata": {
+          "totalResultCount": 718547
+        },
+        "paging": {
+          "count": 10,
+          "start": 0,
+          "total": 1000
+        },
+        "elements": [
+          {
+            "items": [
+              {
+                "item": {
+                  "simpleTextV2": {
+                    "text": {
+                      "text": "About 718,000 results",
+                      "$type": "com.linkedin.voyager.dash.common.text.TextViewModel"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "items": [
+              {
+                "item": {
+                  "*entityResult": "urn:li:fsd_entityResultViewModel:(urn:li:fsd_company:10248363,SEARCH_SRP,DEFAULT)"
+                }
+              },
+              {
+                "item": {
+                  "*entityResult": "urn:li:fsd_entityResultViewModel:(urn:li:fsd_company:10313599,SEARCH_SRP,DEFAULT)"
+                }
+              },
+              {
+                "item": {}
+              },
+              {
+                "item": {
+                  "*entityResult": "urn:li:fsd_entityResultViewModel:(urn:li:fsd_company:90398486,SEARCH_SRP,DEFAULT)"
+                }
+              },
+              {
+                "item": {
+                  "*entityResult": "urn:li:fsd_entityResultViewModel:(urn:li:fsd_company:26668212,SEARCH_SRP,DEFAULT)"
+                }
+              },
+              {
+                "item": {
+                  "*entityResult": "urn:li:fsd_entityResultViewModel:(urn:li:fsd_company:18882089,SEARCH_SRP,DEFAULT)"
+                }
+              },
+              {
+                "item": {
+                  "*entityResult": "urn:li:fsd_entityResultViewModel:(urn:li:fsd_company:137085,SEARCH_SRP,DEFAULT)"
+                }
+              },
+              {
+                "item": {
+                  "*entityResult": "urn:li:fsd_entityResultViewModel:(urn:li:fsd_company:598372,SEARCH_SRP,DEFAULT)"
+                }
+              },
+              {
+                "item": {
+                  "*entityResult": "urn:li:fsd_entityResultViewModel:(urn:li:fsd_company:101067576,SEARCH_SRP,DEFAULT)"
+                }
+              },
+              {
+                "item": {
+                  "*entityResult": "urn:li:fsd_entityResultViewModel:(urn:li:fsd_company:14531560,SEARCH_SRP,DEFAULT)"
+                }
+              },
+              {
+                "item": {
+                  "*entityResult": "urn:li:fsd_entityResultViewModel:(urn:li:fsd_company:68193728,SEARCH_SRP,DEFAULT)"
+                }
+              }
+            ]
+          },
+          {
+            "items": [
+              {
+                "item": {
+                  "*feedbackCard": "urn:li:fsd_feedbackCard:SRP_FEEDBACK_COMPANIES"
+                }
+              }
+            ]
+          }
+        ],
+        "$type": "com.linkedin.restli.common.CollectionResponse"
+      }
+    }
+  },
+  "included": [
+    {
+      "$type": "com.linkedin.voyager.dash.organization.Company",
+      "entityUrn": "urn:li:fsd_company:101067576"
+    },
+    {
+      "$type": "com.linkedin.voyager.dash.organization.Company",
+      "entityUrn": "urn:li:fsd_company:10248363"
+    },
+    {
+      "$type": "com.linkedin.voyager.dash.organization.Company",
+      "entityUrn": "urn:li:fsd_company:26668212"
+    },
+    {
+      "$type": "com.linkedin.voyager.dash.organization.Company",
+      "entityUrn": "urn:li:fsd_company:90398486"
+    },
+    {
+      "$type": "com.linkedin.voyager.dash.organization.Company",
+      "entityUrn": "urn:li:fsd_company:137085"
+    },
+    {
+      "$type": "com.linkedin.voyager.dash.organization.Company",
+      "entityUrn": "urn:li:fsd_company:18882089"
+    },
+    {
+      "$type": "com.linkedin.voyager.dash.organization.Company",
+      "entityUrn": "urn:li:fsd_company:14531560"
+    },
+    {
+      "$type": "com.linkedin.voyager.dash.organization.Company",
+      "entityUrn": "urn:li:fsd_company:10313599"
+    },
+    {
+      "$type": "com.linkedin.voyager.dash.organization.Company",
+      "entityUrn": "urn:li:fsd_company:598372"
+    },
+    {
+      "$type": "com.linkedin.voyager.dash.organization.Company",
+      "entityUrn": "urn:li:fsd_company:68193728"
+    },
+    {
+      "$type": "com.linkedin.voyager.dash.search.EntityResultViewModel",
+      "entityUrn": "urn:li:fsd_entityResultViewModel:(urn:li:fsd_company:10248363,SEARCH_SRP,DEFAULT)",
+      "trackingUrn": "urn:li:company:10248363",
+      "title": {
+        "text": "Corporate Rebels",
+        "$type": "com.linkedin.voyager.dash.common.text.TextViewModel"
+      },
+      "primarySubtitle": {
+        "text": "Research Services • Eindhoven, North Brabant",
+        "$type": "com.linkedin.voyager.dash.common.text.TextViewModel"
+      },
+      "secondarySubtitle": {
+        "text": "216K followers",
+        "$type": "com.linkedin.voyager.dash.common.text.TextViewModel"
+      },
+      "navigationUrl": "https://www.linkedin.com/company/corporate-rebels---the-search-for-the-happy-grail/"
+    },
+    {
+      "$type": "com.linkedin.voyager.dash.search.EntityResultViewModel",
+      "entityUrn": "urn:li:fsd_entityResultViewModel:(urn:li:fsd_company:10313599,SEARCH_SRP,DEFAULT)",
+      "trackingUrn": "urn:li:organization:10313599",
+      "title": {
+        "text": "Corporate Finance Institute® (CFI)",
+        "$type": "com.linkedin.voyager.dash.common.text.TextViewModel"
+      },
+      "primarySubtitle": {
+        "text": "Vancouver, British Columbia",
+        "$type": "com.linkedin.voyager.dash.common.text.TextViewModel"
+      },
+      "secondarySubtitle": {
+        "text": "",
+        "$type": "com.linkedin.voyager.dash.common.text.TextViewModel"
+      },
+      "navigationUrl": "https://www.linkedin.com/company/corporate-finance-institute-cfi/"
+    },
+    {
+      "$type": "com.linkedin.voyager.dash.search.EntityResultViewModel",
+      "entityUrn": "urn:li:fsd_entityResultViewModel:(urn:li:fsd_company:14531560,SEARCH_SRP,DEFAULT)",
+      "trackingUrn": "urn:li:company:14531560",
+      "title": {
+        "text": "The Corporate Bhakt ™️",
+        "$type": "com.linkedin.voyager.dash.common.text.TextViewModel"
+      },
+      "primarySubtitle": {
+        "text": "Online Audio and Video Media • Mumbai, Maharashtra ",
+        "$type": "com.linkedin.voyager.dash.common.text.TextViewModel"
+      },
+      "secondarySubtitle": {
+        "text": "377K followers",
+        "$type": "com.linkedin.voyager.dash.common.text.TextViewModel"
+      },
+      "navigationUrl": "https://www.linkedin.com/company/corporatebhakt/"
+    },
+    {
+      "$type": "com.linkedin.voyager.dash.search.EntityResultViewModel",
+      "entityUrn": "urn:li:fsd_entityResultViewModel:(urn:li:fsd_company:90398486,SEARCH_SRP,DEFAULT)",
+      "trackingUrn": "urn:li:company:90398486",
+      "title": {
+        "text": "Corporate Travel Management (CTM) Group",
+        "$type": "com.linkedin.voyager.dash.common.text.TextViewModel"
+      },
+      "primarySubtitle": {
+        "text": "Travel Arrangements • Brisbane",
+        "$type": "com.linkedin.voyager.dash.common.text.TextViewModel"
+      },
+      "secondarySubtitle": {
+        "text": "83K followers",
+        "$type": "com.linkedin.voyager.dash.common.text.TextViewModel"
+      },
+      "navigationUrl": "https://www.linkedin.com/company/corporate-travel-management-ctm-group/"
+    },
+    {
+      "$type": "com.linkedin.voyager.dash.search.EntityResultViewModel",
+      "entityUrn": "urn:li:fsd_entityResultViewModel:(urn:li:fsd_company:137085,SEARCH_SRP,DEFAULT)",
+      "trackingUrn": "urn:li:company:137085",
+      "title": {
+        "text": "Corporate Brokers",
+        "$type": "com.linkedin.voyager.dash.common.text.TextViewModel"
+      },
+      "primarySubtitle": {
+        "text": "Staffing and Recruiting • Annapolis, Maryland",
+        "$type": "com.linkedin.voyager.dash.common.text.TextViewModel"
+      },
+      "secondarySubtitle": {
+        "text": "62K followers",
+        "$type": "com.linkedin.voyager.dash.common.text.TextViewModel"
+      },
+      "navigationUrl": "https://www.linkedin.com/company/corporate-brokers-llc/"
+    },
+    {
+      "$type": "com.linkedin.voyager.dash.search.EntityResultViewModel",
+      "entityUrn": "urn:li:fsd_entityResultViewModel:(urn:li:fsd_company:18882089,SEARCH_SRP,DEFAULT)",
+      "trackingUrn": "urn:li:company:18882089",
+      "title": {
+        "text": "Corporate Bro",
+        "$type": "com.linkedin.voyager.dash.common.text.TextViewModel"
+      },
+      "primarySubtitle": {
+        "text": "Online Audio and Video Media • San Francisco, California",
+        "$type": "com.linkedin.voyager.dash.common.text.TextViewModel"
+      },
+      "secondarySubtitle": {
+        "text": "136K followers",
+        "$type": "com.linkedin.voyager.dash.common.text.TextViewModel"
+      },
+      "navigationUrl": "https://www.linkedin.com/company/corporatebro/"
+    },
+    {
+      "$type": "com.linkedin.voyager.dash.search.EntityResultViewModel",
+      "entityUrn": "urn:li:fsd_entityResultViewModel:(urn:li:fsd_company:598372,SEARCH_SRP,DEFAULT)",
+      "trackingUrn": "urn:li:company:598372",
+      "title": {
+        "text": "Corporate Resources of Illinois",
+        "$type": "com.linkedin.voyager.dash.common.text.TextViewModel"
+      },
+      "primarySubtitle": {
+        "text": "Staffing and Recruiting • Schaumburg, IL",
+        "$type": "com.linkedin.voyager.dash.common.text.TextViewModel"
+      },
+      "secondarySubtitle": {
+        "text": "48K followers",
+        "$type": "com.linkedin.voyager.dash.common.text.TextViewModel"
+      },
+      "navigationUrl": "https://www.linkedin.com/company/corporate-resources/"
+    },
+    {
+      "$type": "com.linkedin.voyager.dash.search.EntityResultViewModel",
+      "entityUrn": "urn:li:fsd_entityResultViewModel:(urn:li:fsd_company:68193728,SEARCH_SRP,DEFAULT)",
+      "trackingUrn": "urn:li:company:68193728",
+      "title": {
+        "text": "Corporate Soldiers™️",
+        "$type": "com.linkedin.voyager.dash.common.text.TextViewModel"
+      },
+      "primarySubtitle": {
+        "text": "Advertising Services • Delhi , Delhi ",
+        "$type": "com.linkedin.voyager.dash.common.text.TextViewModel"
+      },
+      "secondarySubtitle": {
+        "text": "287K followers",
+        "$type": "com.linkedin.voyager.dash.common.text.TextViewModel"
+      },
+      "navigationUrl": "https://www.linkedin.com/company/corporate-soldiers/"
+    },
+    {
+      "$type": "com.linkedin.voyager.dash.search.EntityResultViewModel",
+      "entityUrn": "urn:li:fsd_entityResultViewModel:(urn:li:fsd_company:101067576,SEARCH_SRP,DEFAULT)",
+      "trackingUrn": "urn:li:company:101067576",
+      "title": {
+        "text": "Corporate Finance Hub®",
+        "$type": "com.linkedin.voyager.dash.common.text.TextViewModel"
+      },
+      "primarySubtitle": {
+        "text": "Education • Delaware",
+        "$type": "com.linkedin.voyager.dash.common.text.TextViewModel"
+      },
+      "secondarySubtitle": {
+        "text": "152K followers",
+        "$type": "com.linkedin.voyager.dash.common.text.TextViewModel"
+      },
+      "navigationUrl": "https://www.linkedin.com/company/corporate-finance-learning%C2%AE/"
+    },
+    {
+      "$type": "com.linkedin.voyager.dash.search.EntityResultViewModel",
+      "entityUrn": "urn:li:fsd_entityResultViewModel:(urn:li:fsd_company:26668212,SEARCH_SRP,DEFAULT)",
+      "trackingUrn": "urn:li:company:26668212",
+      "title": {
+        "text": "Corporate Law Solicitors",
+        "$type": "com.linkedin.voyager.dash.common.text.TextViewModel"
+      },
+      "primarySubtitle": {
+        "text": "Law Practice • London",
+        "$type": "com.linkedin.voyager.dash.common.text.TextViewModel"
+      },
+      "secondarySubtitle": {
+        "text": "52K followers",
+        "$type": "com.linkedin.voyager.dash.common.text.TextViewModel"
+      },
+      "navigationUrl": "https://www.linkedin.com/company/corporate-law-solicitors/"
+    },
+    {
+      "$type": "com.linkedin.voyager.dash.search.FeedbackCard",
+      "entityUrn": "urn:li:fsd_feedbackCard:SRP_FEEDBACK_COMPANIES"
+    },
+    {
+      "$type": "com.linkedin.voyager.dash.search.LazyLoadedActions",
+      "entityUrn": "urn:li:fsd_lazyLoadedActions:(urn:li:fsd_company:137085,COMPANIES,SEARCH_SRP)"
+    },
+    {
+      "$type": "com.linkedin.voyager.dash.search.LazyLoadedActions",
+      "entityUrn": "urn:li:fsd_lazyLoadedActions:(urn:li:fsd_company:90398486,COMPANIES,SEARCH_SRP)"
+    },
+    {
+      "$type": "com.linkedin.voyager.dash.search.LazyLoadedActions",
+      "entityUrn": "urn:li:fsd_lazyLoadedActions:(urn:li:fsd_company:598372,COMPANIES,SEARCH_SRP)"
+    },
+    {
+      "$type": "com.linkedin.voyager.dash.search.LazyLoadedActions",
+      "entityUrn": "urn:li:fsd_lazyLoadedActions:(urn:li:fsd_company:26668212,COMPANIES,SEARCH_SRP)"
+    },
+    {
+      "$type": "com.linkedin.voyager.dash.search.LazyLoadedActions",
+      "entityUrn": "urn:li:fsd_lazyLoadedActions:(urn:li:fsd_company:101067576,COMPANIES,SEARCH_SRP)"
+    },
+    {
+      "$type": "com.linkedin.voyager.dash.search.LazyLoadedActions",
+      "entityUrn": "urn:li:fsd_lazyLoadedActions:(urn:li:fsd_company:18882089,COMPANIES,SEARCH_SRP)"
+    },
+    {
+      "$type": "com.linkedin.voyager.dash.search.LazyLoadedActions",
+      "entityUrn": "urn:li:fsd_lazyLoadedActions:(urn:li:fsd_company:14531560,COMPANIES,SEARCH_SRP)"
+    },
+    {
+      "$type": "com.linkedin.voyager.dash.search.LazyLoadedActions",
+      "entityUrn": "urn:li:fsd_lazyLoadedActions:(urn:li:fsd_company:10248363,COMPANIES,SEARCH_SRP)"
+    },
+    {
+      "$type": "com.linkedin.voyager.dash.search.LazyLoadedActions",
+      "entityUrn": "urn:li:fsd_lazyLoadedActions:(urn:li:fsd_company:68193728,COMPANIES,SEARCH_SRP)"
+    },
+    {
+      "$type": "com.linkedin.voyager.dash.search.LazyLoadedActions",
+      "entityUrn": "urn:li:fsd_lazyLoadedActions:(urn:li:fsd_company:10313599,COMPANIES,SEARCH_SRP)"
+    }
+  ]
+}

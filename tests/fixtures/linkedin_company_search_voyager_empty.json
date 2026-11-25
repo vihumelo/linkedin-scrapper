@@ -1,0 +1,19 @@
+{
+  "data": {
+    "data": {
+      "searchDashClustersByAll": {
+        "metadata": {
+          "totalResultCount": 0
+        },
+        "paging": {
+          "count": 10,
+          "start": 0,
+          "total": 0
+        },
+        "elements": [],
+        "$type": "com.linkedin.restli.common.CollectionResponse"
+      }
+    }
+  },
+  "included": []
+}

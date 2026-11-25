@@ -2,6 +2,7 @@
 
 import logging
 from time import perf_counter
+from urllib.parse import quote
 
 import httpx
 
@@ -19,9 +20,11 @@ from app.core.json_types import JSONValue, normalize_json_value
 logger = logging.getLogger(__name__)
 LINKEDIN_JOB_DETAILS_URL = "https://www.linkedin.com/voyager/api/jobs/jobPostings/{job_id}"
 LINKEDIN_JOB_DETAILS_DECORATION = "com.linkedin.voyager.deco.jobs.web.shared.WebFullJobPosting-65"
+LINKEDIN_GRAPHQL_URL = "https://www.linkedin.com/voyager/api/graphql"
 LINKEDIN_VOYAGER_ACCEPT = "application/vnd.linkedin.normalized+json+2.1"
 LINKEDIN_RESTLI_PROTOCOL_VERSION = "2.0.0"
 JOB_DETAILS_INTEGRATION = "linkedin_job_details_voyager"
+COMPANY_SEARCH_INTEGRATION = "linkedin_company_search_voyager"
 
 
 class VoyagerNotFoundError(LinkedInClientError):
@@ -31,10 +34,11 @@ class VoyagerNotFoundError(LinkedInClientError):
 class LinkedInVoyagerClient:
     """Performs authenticated requests to LinkedIn's Voyager API."""
 
-    def __init__(self, session: LinkedInSession) -> None:
-        """Initializes the client with the shared authenticated session."""
+    def __init__(self, session: LinkedInSession, company_search_query_id: str) -> None:
+        """Initializes the client with the shared session and the GraphQL query IDs."""
 
         self._session = session
+        self._company_search_query_id = company_search_query_id
 
     async def get_job_details(self, job_id: str) -> dict[str, JSONValue]:
         """Requests normalized job details for one job posting."""
@@ -47,6 +51,18 @@ class LinkedInVoyagerClient:
             LINKEDIN_JOB_DETAILS_URL.format(job_id=job_id),
             JOB_DETAILS_INTEGRATION,
             params={"decorationId": LINKEDIN_JOB_DETAILS_DECORATION},
+        )
+
+    async def search_companies(self, name: str, start: int) -> dict[str, JSONValue]:
+        """Requests one page of LinkedIn company search results for a company name."""
+
+        self._session.require_credentials(COMPANY_SEARCH_INTEGRATION)
+        if start < 0:
+            raise ValueError("The start offset must not be negative.")
+
+        return await self._get(
+            _company_search_url(name, start, self._company_search_query_id),
+            COMPANY_SEARCH_INTEGRATION,
         )
 
     async def _get(
@@ -103,6 +119,18 @@ class LinkedInVoyagerClient:
         )
         _validate_voyager_response(response)
         return _decode_voyager_payload(response)
+
+
+def _company_search_url(name: str, start: int, query_id: str) -> str:
+    """Builds the GraphQL search URL, escaping the name so it cannot break the Rest.li syntax."""
+
+    variables = (
+        f"(start:{start},origin:GLOBAL_SEARCH_HEADER,"
+        f"query:(keywords:{quote(name, safe='')},flagshipSearchIntent:SEARCH_SRP,"
+        "queryParameters:List((key:resultType,value:List(COMPANIES))),"
+        "includeFiltersInResponse:false))"
+    )
+    return f"{LINKEDIN_GRAPHQL_URL}?variables={variables}&queryId={quote(query_id, safe='.')}"
 
 
 def _validate_voyager_response(response: httpx.Response) -> None:

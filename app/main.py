@@ -9,6 +9,7 @@ from fastapi import FastAPI, Request, Response
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import RequestResponseEndpoint
 
+from app.api.routes.companies import router as companies_router
 from app.api.routes.job import router as job_router
 from app.api.routes.jobs import router as jobs_router
 from app.clients.linkedin_html_client import LinkedInHtmlClient
@@ -30,7 +31,10 @@ async def lifespan(application: FastAPI) -> AsyncGenerator[None, None]:
     authenticated_http_client = create_authenticated_http_client(settings)
     session = LinkedInSession(authenticated_http_client, settings)
     application.state.linkedin_html_client = LinkedInHtmlClient(session)
-    application.state.linkedin_voyager_client = LinkedInVoyagerClient(session)
+    application.state.linkedin_voyager_client = LinkedInVoyagerClient(
+        session,
+        settings.linkedin_company_search_query_id,
+    )
     try:
         yield
     finally:
@@ -103,6 +107,7 @@ def create_app() -> FastAPI:
 
     application.include_router(jobs_router, prefix="/api")
     application.include_router(job_router, prefix="/api")
+    application.include_router(companies_router, prefix="/api")
     return application
 
 

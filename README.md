@@ -1,7 +1,7 @@
 # LinkedIn Scrapper
 
-A FastAPI service for LinkedIn job search and structured job details. It parses LinkedIn search HTML
-and authenticated Voyager job detail JSON, and caches complete job details in SQLite.
+A FastAPI service for LinkedIn job search, company search, and structured job details. It parses
+LinkedIn search HTML and authenticated Voyager JSON, and caches complete job details in SQLite.
 
 ## Setup
 
@@ -60,6 +60,31 @@ The search HTML parser recognizes English and Brazilian Portuguese interface lab
 interface languages are not explicitly supported and may affect empty-state, pagination, or job-card
 status detection.
 
+### Search companies
+
+`GET /api/companies/search` finds LinkedIn companies by name through the authenticated Voyager API.
+Use a returned `id` as `company_id` in `/api/jobs/search`.
+
+```bash
+curl -G "http://127.0.0.1:8000/api/companies/search" \
+  --data-urlencode "name=banco do brasil" \
+  --data-urlencode "start=0"
+```
+
+`name` is required and must not be blank; `start` defaults to `0`. The response contains `query`,
+`pagination`, and `companies`, in LinkedIn's result order. Each company has `id`, `name`,
+`industry_location`, `followers`, and `url`. `industry_location` and `followers` are LinkedIn's display
+texts, returned as provided: the first may contain the industry, the location, or both separated by
+`•`, and both depend on the LinkedIn interface language. `pagination.total` is LinkedIn's reported
+total for the search, and `has_next` and `next_start` are `null` when LinkedIn does not report it.
+A search without matches returns `200` with an empty `companies` list.
+
+The search uses a LinkedIn GraphQL query ID configured by `LINKEDIN_COMPANY_SEARCH_QUERY_ID`.
+LinkedIn changes these IDs without notice. In our tests, LinkedIn answered an invalid query ID with
+HTTP 500, which this API reports as `503`. If company searches keep returning `503` while job
+details work, copy the current `queryId` of the `voyagerSearchDashClusters` request from the
+browser's network tab on a LinkedIn company search and update the variable.
+
 ### Job details
 
 `GET /api/job/{job_id}` checks the cache before requesting LinkedIn's authenticated Voyager API.
@@ -84,6 +109,7 @@ or LinkedIn Easy Apply URL when available.
 | --- | --- | --- |
 | `LINKEDIN_LI_AT`, `LINKEDIN_JSESSIONID` | empty | Cookies for authenticated search and details |
 | `LINKEDIN_USER_AGENT` | Chrome user agent | LinkedIn request header |
+| `LINKEDIN_COMPANY_SEARCH_QUERY_ID` | current known ID | GraphQL query ID for company search |
 | `HTTP_TIMEOUT_SECONDS` | `30` | Upstream timeout |
 | `CACHE_BACKEND` | `sqlite` | Cache adapter |
 | `CACHE_SQLITE_PATH` | `./data/jobs_cache.db` | Local cache database |
@@ -102,5 +128,6 @@ Online tests are opt-in and call LinkedIn:
 
 ```bash
 RUN_LINKEDIN_INTEGRATION=1 pytest tests/integration/test_linkedin_search.py
+RUN_LINKEDIN_INTEGRATION=1 pytest tests/integration/test_linkedin_company_search.py
 RUN_LINKEDIN_JOB_DETAILS_INTEGRATION=1 pytest tests/integration/test_linkedin_job_details.py
 ```

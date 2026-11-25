@@ -23,6 +23,10 @@ class Settings(BaseSettings):
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
         "(KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36"
     )
+    linkedin_company_search_query_id: str = Field(
+        default="voyagerSearchDashClusters.b0928897b71bd00a5a7291755dcd64f0",
+        min_length=1,
+    )
     http_timeout_seconds: float = Field(default=30, gt=0)
     cache_backend: str = "sqlite"
     cache_sqlite_path: Path = Path("./data/jobs_cache.db")
