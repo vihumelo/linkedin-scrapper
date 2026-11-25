@@ -56,6 +56,10 @@ At least one of `keywords` or `company_id` is required; both may be combined. Fo
 searches, the LinkedIn request uses `keywords=jobs` internally with the company filter. The API
 response keeps `query.keywords` as `null` and reports the supplied `company_id`.
 
+The search HTML parser recognizes English and Brazilian Portuguese interface labels. Other LinkedIn
+interface languages are not explicitly supported and may affect empty-state, pagination, or job-card
+status detection.
+
 ### Job details
 
 `GET /api/job/{job_id}` checks the cache before requesting LinkedIn's authenticated Voyager API.
