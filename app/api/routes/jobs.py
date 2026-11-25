@@ -27,7 +27,8 @@ async def search_jobs(
         AuthenticatedLinkedInClient,
         Depends(get_authenticated_linkedin_client),
     ],
-    keywords: str = Query(..., min_length=1),
+    keywords: str | None = Query(None, min_length=1),
+    company_id: str | None = Query(None, pattern=r"^[0-9]+$"),
     geo_id: str = Query("90009574", min_length=1),
     f_tpr: Literal["r86400", "r604800", "r2592000"] = Query(
         "r2592000",
@@ -37,37 +38,48 @@ async def search_jobs(
 ) -> JobSearchResponse:
     """Searches LinkedIn jobs and returns structured cards and pagination data."""
 
-    if not keywords.strip():
+    if keywords is not None and not keywords.strip():
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="O parâmetro keywords não pode conter apenas espaços.",
+            detail="The keywords parameter must not contain only whitespace.",
+        )
+    if keywords is None and company_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Provide either keywords or company_id to search.",
         )
 
     try:
-        return await JobSearchService(linkedin_client).search(keywords, geo_id, f_tpr, start)
+        return await JobSearchService(linkedin_client).search(
+            keywords,
+            geo_id,
+            f_tpr,
+            start,
+            company_id=company_id,
+        )
     except LinkedInCredentialsError as exc:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="A integração com o LinkedIn não está configurada.",
+            detail="The LinkedIn integration is not configured.",
         ) from exc
     except LinkedInAuthenticationError as exc:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
-            detail="O LinkedIn recusou a autenticação configurada.",
+            detail="LinkedIn rejected the configured authentication.",
         ) from exc
     except LinkedInTimeoutError as exc:
         raise HTTPException(
             status_code=status.HTTP_504_GATEWAY_TIMEOUT,
-            detail="A consulta ao LinkedIn excedeu o tempo limite.",
+            detail="The LinkedIn request exceeded the time limit.",
         ) from exc
     except LinkedInResponseError as exc:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
-            detail="Não foi possível obter resultados válidos do LinkedIn.",
+            detail="Could not obtain valid results from LinkedIn.",
         ) from exc
     except HTMLStructureError as exc:
-        logger.warning("A estrutura da página de resultados do LinkedIn mudou.")
+        logger.warning("The LinkedIn search results page structure has changed.")
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
-            detail="O formato da resposta do LinkedIn não é reconhecido.",
+            detail="The LinkedIn response format is not recognized.",
         ) from exc

@@ -21,19 +21,34 @@ class JobSearchService:
 
     async def search(
         self,
-        keywords: str,
+        keywords: str | None,
         geo_id: str,
         f_tpr: Literal["r86400", "r604800", "r2592000"],
         start: int,
+        company_id: str | None = None,
     ) -> JobSearchResponse:
         """Searches for jobs and builds the validated API response."""
 
-        html = await self._linkedin_client.search_jobs(keywords, geo_id, f_tpr, start)
+        if company_id is None:
+            html = await self._linkedin_client.search_jobs(keywords, geo_id, f_tpr, start)
+        else:
+            html = await self._linkedin_client.search_jobs(
+                keywords,
+                geo_id,
+                f_tpr,
+                start,
+                company_id=company_id,
+            )
         jobs, has_next = parse_job_search_html(html, start)
         count = len(jobs)
         next_start = start + count if has_next is True else None
         return JobSearchResponse(
-            query=JobQuery(keywords=keywords, geo_id=geo_id, f_tpr=f_tpr),
+            query=JobQuery(
+                keywords=keywords,
+                company_id=company_id,
+                geo_id=geo_id,
+                f_tpr=f_tpr,
+            ),
             pagination=JobPagination(
                 start=start,
                 count=count,

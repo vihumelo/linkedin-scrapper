@@ -60,7 +60,7 @@ def test_get_job_details_rejects_unicode_decimal_id(job_id: str) -> None:
     """Rejects non-ASCII IDs before sending an HTTP request."""
 
     def fail_if_called(request: httpx.Request) -> httpx.Response:
-        pytest.fail(f"Não deveria enviar uma requisição para {request.url}.")
+        pytest.fail(f"Should not send a request to {request.url}.")
 
     async def call_client() -> None:
         settings = Settings(linkedin_li_at="li-at-test", linkedin_jsessionid="session-test")
@@ -105,7 +105,7 @@ def test_get_job_details_requires_credentials_before_request() -> None:
     """Fails without making a request if the LinkedIn cookies are missing."""
 
     def fail_if_called(request: httpx.Request) -> httpx.Response:
-        pytest.fail(f"Não deveria enviar uma requisição para {request.url}.")
+        pytest.fail(f"Should not send a request to {request.url}.")
 
     async def call_client() -> None:
         async with httpx.AsyncClient(transport=httpx.MockTransport(fail_if_called)) as http_client:
@@ -113,7 +113,7 @@ def test_get_job_details_requires_credentials_before_request() -> None:
                 http_client,
                 Settings(linkedin_li_at="", linkedin_jsessionid=""),
             )
-            with pytest.raises(LinkedInCredentialsError, match="cookies de autenticação"):
+            with pytest.raises(LinkedInCredentialsError, match="authentication cookies"):
                 await client.get_job_details(JOB_ID)
 
     asyncio.run(call_client())

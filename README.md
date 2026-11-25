@@ -35,16 +35,26 @@ Docs: <http://127.0.0.1:8000/docs>
 
 ```bash
 curl -G "http://127.0.0.1:8000/api/jobs/search" \
-  --data-urlencode "keywords=biomedicina" \
+  --data-urlencode "keywords=biomedical science" \
   --data-urlencode "geo_id=90009574" \
   --data-urlencode "f_TPR=r86400" \
   --data-urlencode "start=0"
+```
+
+Search by a LinkedIn company ID without a keyword:
+
+```bash
+curl -G "http://127.0.0.1:8000/api/jobs/search" \
+  --data-urlencode "company_id=1185"
 ```
 
 Optional parameters: `geo_id` (default `90009574`, Greater São Paulo Area), `f_TPR` (default
 `r2592000`, past 30 days), and `start` (default `0`). The supported `f_TPR` values are `r86400`
 (past 24 hours), `r604800` (past week), and `r2592000` (past 30 days). The response contains
 `query`, `pagination`, and `jobs`, including the applied `f_tpr` value in `query`.
+At least one of `keywords` or `company_id` is required; both may be combined. For company-only
+searches, the LinkedIn request uses `keywords=jobs` internally with the company filter. The API
+response keeps `query.keywords` as `null` and reports the supplied `company_id`.
 
 ### Job details
 

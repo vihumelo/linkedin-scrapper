@@ -57,39 +57,43 @@ class AuthenticatedLinkedInClient:
 
     async def search_jobs(
         self,
-        keywords: str,
+        keywords: str | None,
         geo_id: str,
         f_tpr: Literal["r86400", "r604800", "r2592000"],
         start: int,
+        company_id: str | None = None,
     ) -> str:
         """Requests the LinkedIn results HTML page for the supplied parameters."""
 
         if not self._settings.linkedin_li_at or not self._settings.linkedin_jsessionid:
             logger.error(
-                "Busca do LinkedIn não iniciada: faltam credenciais de integração.",
+                "LinkedIn search skipped because integration credentials are missing.",
                 extra={
                     "event": "upstream.request.skipped",
                     "integration": "linkedin_jobs_search",
                     "reason": "credentials_missing",
                 },
             )
-            raise LinkedInCredentialsError("Os cookies de autenticação não estão configurados.")
+            raise LinkedInCredentialsError("LinkedIn authentication cookies are not configured.")
 
         started_at = perf_counter()
+        params: dict[str, str | int] = {
+            "keywords": keywords if keywords is not None else "jobs",
+            "geoId": geo_id,
+            "f_TPR": f_tpr,
+            "origin": "SEMANTIC_SEARCH_LANDING_PAGE",
+            "start": start,
+        }
+        if company_id is not None:
+            params["f_C"] = company_id
         try:
             response = await self._http_client.get(
                 LINKEDIN_SEARCH_URL,
-                params={
-                    "keywords": keywords,
-                    "geoId": geo_id,
-                    "f_TPR": f_tpr,
-                    "origin": "SEMANTIC_SEARCH_LANDING_PAGE",
-                    "start": start,
-                },
+                params=params,
             )
         except httpx.TimeoutException as exc:
             logger.warning(
-                "Falha de timeout na integração com o LinkedIn.",
+                "The LinkedIn integration request timed out.",
                 extra={
                     "event": "upstream.request.failed",
                     "integration": "linkedin_jobs_search",
@@ -97,10 +101,10 @@ class AuthenticatedLinkedInClient:
                     "error_type": type(exc).__name__,
                 },
             )
-            raise LinkedInTimeoutError("A consulta ao LinkedIn excedeu o tempo limite.") from exc
+            raise LinkedInTimeoutError("The LinkedIn request exceeded the time limit.") from exc
         except httpx.RequestError as exc:
             logger.warning(
-                "Falha de rede na integração com o LinkedIn.",
+                "A network error occurred while requesting LinkedIn.",
                 extra={
                     "event": "upstream.request.failed",
                     "integration": "linkedin_jobs_search",
@@ -108,11 +112,11 @@ class AuthenticatedLinkedInClient:
                     "error_type": type(exc).__name__,
                 },
             )
-            raise LinkedInResponseError("Não foi possível consultar o LinkedIn.") from exc
+            raise LinkedInResponseError("Could not query LinkedIn.") from exc
 
         logger.log(
             logging.WARNING if response.status_code >= 400 else logging.INFO,
-            "Resposta recebida do LinkedIn.",
+            "Received a response from LinkedIn.",
             extra={
                 "event": "upstream.response",
                 "integration": "linkedin_jobs_search",
@@ -121,18 +125,16 @@ class AuthenticatedLinkedInClient:
             },
         )
         if response.status_code in (401, 403):
-            raise LinkedInAuthenticationError("O LinkedIn recusou a autenticação configurada.")
+            raise LinkedInAuthenticationError("LinkedIn rejected the configured authentication.")
         if response.is_error:
-            logger.warning("O LinkedIn respondeu com status HTTP %s.", response.status_code)
-            raise LinkedInResponseError("O LinkedIn retornou uma resposta de erro.")
+            logger.warning("LinkedIn responded with HTTP status %s.", response.status_code)
+            raise LinkedInResponseError("LinkedIn returned an error response.")
         if _redirected_to_authentication(response):
-            raise LinkedInAuthenticationError(
-                "O LinkedIn redirecionou a consulta para autenticação."
-            )
+            raise LinkedInAuthenticationError("LinkedIn redirected the request to authentication.")
         if "text/html" not in response.headers.get("content-type", "").casefold():
-            raise LinkedInResponseError("O LinkedIn não retornou uma página HTML válida.")
+            raise LinkedInResponseError("LinkedIn did not return a valid HTML page.")
         if not response.text.strip():
-            raise LinkedInResponseError("O LinkedIn retornou uma página vazia.")
+            raise LinkedInResponseError("LinkedIn returned an empty page.")
         return response.text
 
     async def get_job_details(self, job_id: str) -> dict[str, JSONValue]:
@@ -140,16 +142,16 @@ class AuthenticatedLinkedInClient:
 
         if not self._settings.linkedin_li_at or not self._settings.linkedin_jsessionid:
             logger.error(
-                "Detalhes da vaga não consultados: faltam credenciais de integração.",
+                "Job details request skipped because integration credentials are missing.",
                 extra={
                     "event": "upstream.request.skipped",
                     "integration": "linkedin_job_details_voyager",
                     "reason": "credentials_missing",
                 },
             )
-            raise LinkedInCredentialsError("Os cookies de autenticação não estão configurados.")
+            raise LinkedInCredentialsError("LinkedIn authentication cookies are not configured.")
         if not job_id.isascii() or not job_id.isdigit():
-            raise ValueError("O identificador da vaga deve conter apenas dígitos ASCII.")
+            raise ValueError("The job ID must contain only ASCII digits.")
 
         started_at = perf_counter()
         try:
@@ -164,7 +166,7 @@ class AuthenticatedLinkedInClient:
             )
         except httpx.TimeoutException as exc:
             logger.warning(
-                "Timeout na consulta autenticada dos detalhes da vaga.",
+                "The authenticated job details request timed out.",
                 extra={
                     "event": "upstream.request.failed",
                     "integration": "linkedin_job_details_voyager",
@@ -172,10 +174,10 @@ class AuthenticatedLinkedInClient:
                     "error_type": type(exc).__name__,
                 },
             )
-            raise LinkedInTimeoutError("A consulta ao LinkedIn excedeu o tempo limite.") from exc
+            raise LinkedInTimeoutError("The LinkedIn request exceeded the time limit.") from exc
         except httpx.RequestError as exc:
             logger.warning(
-                "Falha de rede na consulta autenticada dos detalhes da vaga.",
+                "A network error occurred while requesting authenticated job details.",
                 extra={
                     "event": "upstream.request.failed",
                     "integration": "linkedin_job_details_voyager",
@@ -183,11 +185,11 @@ class AuthenticatedLinkedInClient:
                     "error_type": type(exc).__name__,
                 },
             )
-            raise LinkedInResponseError("Não foi possível consultar o LinkedIn.") from exc
+            raise LinkedInResponseError("Could not query LinkedIn.") from exc
 
         logger.log(
             logging.WARNING if response.status_code >= 400 else logging.INFO,
-            "Resposta recebida do LinkedIn.",
+            "Received a response from LinkedIn.",
             extra={
                 "event": "upstream.response",
                 "integration": "linkedin_job_details_voyager",
@@ -203,18 +205,18 @@ def _validate_job_details_response(response: httpx.Response) -> None:
     """Raises a safe integration error when Voyager returns an unsuccessful response."""
 
     if response.status_code in (401, 403) or _redirected_to_authentication(response):
-        raise LinkedInAuthenticationError("O LinkedIn recusou a autenticação configurada.")
+        raise LinkedInAuthenticationError("LinkedIn rejected the configured authentication.")
     if response.status_code == 404:
-        raise LinkedInJobNotFoundError("A vaga não existe ou não está mais disponível.")
+        raise LinkedInJobNotFoundError("The job does not exist or is no longer available.")
     if response.status_code == 429 or response.status_code >= 500:
-        raise LinkedInServiceUnavailableError("O endpoint Voyager do LinkedIn está indisponível.")
+        raise LinkedInServiceUnavailableError("LinkedIn's Voyager endpoint is unavailable.")
     if response.is_error:
-        raise LinkedInResponseError("O LinkedIn retornou uma resposta de erro.")
+        raise LinkedInResponseError("LinkedIn returned an error response.")
     if (
         LINKEDIN_VOYAGER_ACCEPT.split(";")[0]
         not in response.headers.get("content-type", "").casefold()
     ):
-        raise LinkedInResponseError("O LinkedIn não retornou uma resposta JSON Voyager válida.")
+        raise LinkedInResponseError("LinkedIn did not return a valid Voyager JSON response.")
 
 
 def _decode_job_details_payload(response: httpx.Response) -> dict[str, JSONValue]:
@@ -223,13 +225,13 @@ def _decode_job_details_payload(response: httpx.Response) -> dict[str, JSONValue
     try:
         payload: object = response.json()
     except ValueError as exc:
-        raise LinkedInResponseError("O LinkedIn retornou um JSON inválido.") from exc
+        raise LinkedInResponseError("LinkedIn returned invalid JSON.") from exc
     try:
         normalized_payload = normalize_json_value(payload)
     except ValueError as exc:
-        raise LinkedInResponseError("O LinkedIn retornou uma estrutura JSON inválida.") from exc
+        raise LinkedInResponseError("LinkedIn returned an invalid JSON structure.") from exc
     if not isinstance(normalized_payload, dict):
-        raise LinkedInResponseError("O LinkedIn retornou uma estrutura JSON inesperada.")
+        raise LinkedInResponseError("LinkedIn returned an unexpected JSON structure.")
     return normalized_payload
 
 

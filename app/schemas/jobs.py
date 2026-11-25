@@ -10,7 +10,8 @@ class JobQuery(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    keywords: str
+    keywords: str | None
+    company_id: str | None = None
     geo_id: str
     f_tpr: Literal["r86400", "r604800", "r2592000"]
 

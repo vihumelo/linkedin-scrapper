@@ -44,18 +44,66 @@ def test_search_jobs_sends_location_and_time_filter(f_tpr: str) -> None:
     asyncio.run(call_client())
 
     assert len(requests) == 1
-    params = requests[0].url.params
+    request = requests[0]
+    assert request.url.path == "/jobs/search-results/"
+    params = request.url.params
     assert params["keywords"] == "software engineer"
     assert params["geoId"] == "90009574"
     assert params["f_TPR"] == f_tpr
+    assert params["origin"] == "SEMANTIC_SEARCH_LANDING_PAGE"
     assert params["start"] == "25"
+    assert "f_C" not in params
+
+
+@pytest.mark.parametrize(
+    ("keywords", "expected_keywords"),
+    [(None, "jobs"), ("quality analyst", "quality analyst")],
+)
+def test_search_jobs_sends_company_filter(
+    keywords: str | None,
+    expected_keywords: str,
+) -> None:
+    """Uses the company ID filter and only falls back to the generic keyword when needed."""
+
+    requests: list[httpx.Request] = []
+
+    def return_results(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        return httpx.Response(
+            200,
+            text="<html>results</html>",
+            headers={"content-type": "text/html"},
+            request=request,
+        )
+
+    async def call_client() -> None:
+        settings = Settings(linkedin_li_at="li-at-test", linkedin_jsessionid="session-test")
+        async with httpx.AsyncClient(transport=httpx.MockTransport(return_results)) as http_client:
+            linkedin_client = AuthenticatedLinkedInClient(http_client, settings)
+            await linkedin_client.search_jobs(
+                keywords=keywords,
+                geo_id="90009574",
+                f_tpr="r2592000",
+                start=0,
+                company_id="1185",
+            )
+
+    asyncio.run(call_client())
+
+    assert len(requests) == 1
+    params = requests[0].url.params
+    assert params["keywords"] == expected_keywords
+    assert params["f_C"] == "1185"
+    assert params["geoId"] == "90009574"
+    assert params["f_TPR"] == "r2592000"
+    assert params["start"] == "0"
 
 
 def test_search_jobs_requires_credentials_before_request() -> None:
     """Does not send a request when the authentication cookies are missing."""
 
     def fail_if_called(request: httpx.Request) -> httpx.Response:
-        pytest.fail(f"Não deveria enviar uma requisição para {request.url}.")
+        pytest.fail(f"Should not send a request to {request.url}.")
 
     async def call_client() -> None:
         async with httpx.AsyncClient(transport=httpx.MockTransport(fail_if_called)) as http_client:
