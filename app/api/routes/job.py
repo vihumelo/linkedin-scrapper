@@ -1,6 +1,5 @@
 """Routes for operations on a specific job."""
 
-import logging
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
@@ -19,7 +18,6 @@ from app.ports.job_cache import JobCache
 from app.schemas.jobs import JobDetailResponse
 from app.services.job_details import JobDetailService, JobNotFoundError
 
-logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/job", tags=["job"])
 
 
@@ -58,7 +56,6 @@ async def get_job_details(
             detail="LinkedIn rejected the configured authentication.",
         ) from exc
     except (LinkedInResponseError, JobDetailVoyagerStructureError) as exc:
-        logger.warning("Could not parse the job details returned by LinkedIn.")
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail="LinkedIn returned an invalid job format.",

@@ -1,8 +1,15 @@
 """Orchestrates LinkedIn company searches and result extraction."""
 
-from app.clients.linkedin_voyager_client import LinkedInVoyagerClient
-from app.parsers.linkedin_voyager_companies import parse_company_search_voyager
+import logging
+
+from app.clients.linkedin_voyager_client import COMPANY_SEARCH_INTEGRATION, LinkedInVoyagerClient
+from app.parsers.linkedin_voyager_companies import (
+    CompanySearchStructureError,
+    parse_company_search_voyager,
+)
 from app.schemas.companies import CompanyPagination, CompanyQuery, CompanySearchResponse
+
+logger = logging.getLogger(__name__)
 
 
 class CompanySearchService:
@@ -17,7 +24,17 @@ class CompanySearchService:
         """Searches companies by name and builds the validated API response."""
 
         payload = await self._voyager_client.search_companies(name, start)
-        page = parse_company_search_voyager(payload)
+        try:
+            page = parse_company_search_voyager(payload)
+        except CompanySearchStructureError:
+            logger.warning(
+                "The LinkedIn company search response was not recognized.",
+                extra={
+                    "event": "upstream.response.unrecognized",
+                    "integration": COMPANY_SEARCH_INTEGRATION,
+                },
+            )
+            raise
 
         has_next: bool | None = None
         next_start: int | None = None

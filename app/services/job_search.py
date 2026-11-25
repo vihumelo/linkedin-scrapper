@@ -1,14 +1,17 @@
 """Orchestrates LinkedIn requests and result extraction."""
 
+import logging
 from typing import Literal
 
-from app.clients.linkedin_html_client import LinkedInHtmlClient
-from app.parsers.linkedin_jobs import parse_job_search_html
+from app.clients.linkedin_html_client import JOBS_SEARCH_INTEGRATION, LinkedInHtmlClient
+from app.parsers.linkedin_jobs import HTMLStructureError, parse_job_search_html
 from app.schemas.jobs import (
     JobPagination,
     JobQuery,
     JobSearchResponse,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class JobSearchService:
@@ -39,7 +42,19 @@ class JobSearchService:
                 start,
                 company_id=company_id,
             )
-        jobs, has_next = parse_job_search_html(html, start)
+        try:
+            jobs, has_next = parse_job_search_html(html, start)
+        except HTMLStructureError as exc:
+            logger.warning(
+                "The LinkedIn search results page was not recognized.",
+                extra={
+                    "event": "upstream.response.unrecognized",
+                    "integration": JOBS_SEARCH_INTEGRATION,
+                    "reason": exc.reason,
+                    "html_bytes": len(html.encode()),
+                },
+            )
+            raise
         count = len(jobs)
         next_start = start + count if has_next is True else None
         return JobSearchResponse(

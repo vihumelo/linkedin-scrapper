@@ -1,6 +1,7 @@
 """Extracts jobs and pagination data from LinkedIn HTML."""
 
 import re
+from typing import Literal
 
 from bs4 import BeautifulSoup, Tag
 
@@ -40,8 +41,17 @@ POSTED_TEXT_PATTERN = re.compile(
 )
 
 
+type HTMLStructureFailure = Literal["no_job_cards", "unreadable_job_card"]
+
+
 class HTMLStructureError(ValueError):
     """Indicates that the page does not contain a recognized results structure."""
+
+    def __init__(self, message: str, reason: HTMLStructureFailure) -> None:
+        """Stores the message and a log-safe code identifying the failed check."""
+
+        super().__init__(message)
+        self.reason: HTMLStructureFailure = reason
 
 
 def parse_job_search_html(html: str, start: int) -> tuple[list[JobListing], bool | None]:
@@ -52,7 +62,10 @@ def parse_job_search_html(html: str, start: int) -> tuple[list[JobListing], bool
     if not cards:
         if _has_explicit_empty_state(soup):
             return [], False
-        raise HTMLStructureError("The page does not contain any recognized job cards.")
+        raise HTMLStructureError(
+            "The page does not contain any recognized job cards.",
+            reason="no_job_cards",
+        )
 
     jobs: list[JobListing] = []
     seen_ids: set[str] = set()
@@ -112,7 +125,8 @@ def _parse_job_card(job_id: str, card: Tag) -> JobListing:
         ]
         if len(field_values) == 1:
             raise HTMLStructureError(
-                "The card contains one unmarked field for either company or location."
+                "The card contains one unmarked field for either company or location.",
+                reason="unreadable_job_card",
             )
         company = field_values[0] if field_values else None
         location = field_values[1] if len(field_values) > 1 else None
@@ -123,7 +137,10 @@ def _parse_job_card(job_id: str, card: Tag) -> JobListing:
         location = _find_semantic_location(card)
 
     if title is None:
-        raise HTMLStructureError("The card does not contain a recognizable title.")
+        raise HTMLStructureError(
+            "The card does not contain a recognizable title.",
+            reason="unreadable_job_card",
+        )
 
     return JobListing(
         id=job_id,

@@ -2,8 +2,15 @@
 
 import logging
 
-from app.clients.linkedin_voyager_client import LinkedInVoyagerClient, VoyagerNotFoundError
-from app.parsers.linkedin_voyager_job_details import parse_job_detail_voyager
+from app.clients.linkedin_voyager_client import (
+    JOB_DETAILS_INTEGRATION,
+    LinkedInVoyagerClient,
+    VoyagerNotFoundError,
+)
+from app.parsers.linkedin_voyager_job_details import (
+    JobDetailVoyagerStructureError,
+    parse_job_detail_voyager,
+)
 from app.ports.job_cache import JobCache, JobCacheError
 from app.schemas.jobs import JobDetail, JobDetailResponse
 
@@ -62,7 +69,17 @@ class JobDetailService:
             payload = await self._linkedin_client.get_job_details(job_id)
         except VoyagerNotFoundError as exc:
             raise JobNotFoundError("The job does not exist or is no longer available.") from exc
-        job = parse_job_detail_voyager(payload, job_id)
+        try:
+            job = parse_job_detail_voyager(payload, job_id)
+        except JobDetailVoyagerStructureError:
+            logger.warning(
+                "The LinkedIn job details response was not recognized.",
+                extra={
+                    "event": "upstream.response.unrecognized",
+                    "integration": JOB_DETAILS_INTEGRATION,
+                },
+            )
+            raise
         if _is_cacheable(job):
             try:
                 await self._cache.save(job)

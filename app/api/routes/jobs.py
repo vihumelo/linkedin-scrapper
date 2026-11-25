@@ -1,6 +1,5 @@
 """Routes for operations on job collections."""
 
-import logging
 from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -17,7 +16,6 @@ from app.parsers.linkedin_jobs import HTMLStructureError
 from app.schemas.jobs import JobSearchResponse
 from app.services.job_search import JobSearchService
 
-logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/jobs", tags=["jobs"])
 
 
@@ -78,7 +76,6 @@ async def search_jobs(
             detail="Could not obtain valid results from LinkedIn.",
         ) from exc
     except HTMLStructureError as exc:
-        logger.warning("The LinkedIn search results page structure has changed.")
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail="The LinkedIn response format is not recognized.",

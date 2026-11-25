@@ -283,7 +283,7 @@ def test_search_jobs_rejects_negative_start() -> None:
         (LinkedInAuthenticationError("unauthorized"), 502),
         (LinkedInTimeoutError("timed out"), 504),
         (LinkedInResponseError("invalid response"), 502),
-        (HTMLStructureError("unexpected HTML"), 502),
+        (HTMLStructureError("unexpected HTML", reason="no_job_cards"), 502),
     ],
 )
 def test_search_jobs_maps_upstream_errors(

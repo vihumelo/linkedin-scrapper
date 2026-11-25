@@ -1,6 +1,5 @@
 """Routes for operations on LinkedIn companies."""
 
-import logging
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -18,7 +17,6 @@ from app.parsers.linkedin_voyager_companies import CompanySearchStructureError
 from app.schemas.companies import CompanySearchResponse
 from app.services.company_search import CompanySearchService
 
-logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/companies", tags=["companies"])
 
 
@@ -62,7 +60,6 @@ async def search_companies(
             detail="Could not obtain valid results from LinkedIn.",
         ) from exc
     except CompanySearchStructureError as exc:
-        logger.warning("The LinkedIn company search response structure was not recognized.")
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail="The LinkedIn response format is not recognized.",
