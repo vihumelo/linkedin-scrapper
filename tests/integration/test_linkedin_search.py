@@ -9,10 +9,8 @@ import os
 
 import pytest
 
-from app.clients.authenticated_client import (
-    AuthenticatedLinkedInClient,
-    create_authenticated_http_client,
-)
+from app.clients.linkedin_html_client import LinkedInHtmlClient
+from app.clients.linkedin_session import LinkedInSession, create_authenticated_http_client
 from app.core.config import Settings
 from app.services.job_search import JobSearchService
 
@@ -31,7 +29,7 @@ def test_linkedin_search_integration() -> None:
     async def search() -> None:
         async with create_authenticated_http_client(settings) as http_client:
             response = await JobSearchService(
-                AuthenticatedLinkedInClient(http_client, settings)
+                LinkedInHtmlClient(LinkedInSession(http_client, settings))
             ).search(
                 keywords="software engineer",
                 geo_id="90009574",
@@ -66,7 +64,7 @@ def test_linkedin_company_search_integration() -> None:
     async def search() -> None:
         async with create_authenticated_http_client(settings) as http_client:
             response = await JobSearchService(
-                AuthenticatedLinkedInClient(http_client, settings)
+                LinkedInHtmlClient(LinkedInSession(http_client, settings))
             ).search(
                 keywords=None,
                 geo_id="90009574",

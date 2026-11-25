@@ -1,15 +1,16 @@
-"""Offline tests for authenticated LinkedIn job searches."""
+"""Offline tests for the LinkedIn HTML client job searches."""
 
 import asyncio
 
 import httpx
 import pytest
 
-from app.clients.authenticated_client import (
-    AuthenticatedLinkedInClient,
+from app.clients.linkedin_html_client import LinkedInHtmlClient
+from app.clients.linkedin_session import (
     LinkedInAuthenticationError,
     LinkedInCredentialsError,
     LinkedInResponseError,
+    LinkedInSession,
     LinkedInTimeoutError,
 )
 from app.core.config import Settings
@@ -33,7 +34,7 @@ def test_search_jobs_sends_location_and_time_filter(f_tpr: str) -> None:
     async def call_client() -> None:
         settings = Settings(linkedin_li_at="li-at-test", linkedin_jsessionid="session-test")
         async with httpx.AsyncClient(transport=httpx.MockTransport(return_results)) as http_client:
-            linkedin_client = AuthenticatedLinkedInClient(http_client, settings)
+            linkedin_client = LinkedInHtmlClient(LinkedInSession(http_client, settings))
             await linkedin_client.search_jobs(
                 keywords="software engineer",
                 geo_id="90009574",
@@ -79,7 +80,7 @@ def test_search_jobs_sends_company_filter(
     async def call_client() -> None:
         settings = Settings(linkedin_li_at="li-at-test", linkedin_jsessionid="session-test")
         async with httpx.AsyncClient(transport=httpx.MockTransport(return_results)) as http_client:
-            linkedin_client = AuthenticatedLinkedInClient(http_client, settings)
+            linkedin_client = LinkedInHtmlClient(LinkedInSession(http_client, settings))
             await linkedin_client.search_jobs(
                 keywords=keywords,
                 geo_id="90009574",
@@ -107,9 +108,8 @@ def test_search_jobs_requires_credentials_before_request() -> None:
 
     async def call_client() -> None:
         async with httpx.AsyncClient(transport=httpx.MockTransport(fail_if_called)) as http_client:
-            client = AuthenticatedLinkedInClient(
-                http_client,
-                Settings(linkedin_li_at="", linkedin_jsessionid=""),
+            client = LinkedInHtmlClient(
+                LinkedInSession(http_client, Settings(linkedin_li_at="", linkedin_jsessionid=""))
             )
             with pytest.raises(LinkedInCredentialsError):
                 await client.search_jobs("python", "1", "r86400", 0)
@@ -136,7 +136,7 @@ def test_search_jobs_maps_network_errors(
     async def call_client() -> None:
         settings = Settings(linkedin_li_at="li-at-test", linkedin_jsessionid="session-test")
         async with httpx.AsyncClient(transport=httpx.MockTransport(fail_request)) as http_client:
-            client = AuthenticatedLinkedInClient(http_client, settings)
+            client = LinkedInHtmlClient(LinkedInSession(http_client, settings))
             with pytest.raises(expected_error):
                 await client.search_jobs("python", "1", "r86400", 0)
 
@@ -171,7 +171,7 @@ def test_search_jobs_rejects_invalid_upstream_responses(
     async def call_client() -> None:
         settings = Settings(linkedin_li_at="li-at-test", linkedin_jsessionid="session-test")
         async with httpx.AsyncClient(transport=httpx.MockTransport(return_response)) as http_client:
-            client = AuthenticatedLinkedInClient(http_client, settings)
+            client = LinkedInHtmlClient(LinkedInSession(http_client, settings))
             with pytest.raises(expected_error):
                 await client.search_jobs("python", "1", "r86400", 0)
 

@@ -5,15 +5,15 @@ import asyncio
 import httpx
 import pytest
 
-from app.clients.authenticated_client import (
-    AuthenticatedLinkedInClient,
+from app.clients.linkedin_session import (
     LinkedInAuthenticationError,
     LinkedInCredentialsError,
-    LinkedInJobNotFoundError,
     LinkedInResponseError,
     LinkedInServiceUnavailableError,
+    LinkedInSession,
     LinkedInTimeoutError,
 )
+from app.clients.linkedin_voyager_client import LinkedInVoyagerClient, VoyagerNotFoundError
 from app.core.config import Settings
 
 JOB_ID = "4486249045"
@@ -37,7 +37,7 @@ def test_get_job_details_sends_voyager_headers_and_decoration() -> None:
     async def call_client() -> None:
         settings = Settings(linkedin_li_at="li-at-test", linkedin_jsessionid="session-test")
         async with httpx.AsyncClient(transport=httpx.MockTransport(return_job)) as http_client:
-            client = AuthenticatedLinkedInClient(http_client, settings)
+            client = LinkedInVoyagerClient(LinkedInSession(http_client, settings))
             payload = await client.get_job_details(JOB_ID)
             assert payload["data"]["title"] == "Engenheiro de software"
 
@@ -65,7 +65,7 @@ def test_get_job_details_rejects_unicode_decimal_id(job_id: str) -> None:
     async def call_client() -> None:
         settings = Settings(linkedin_li_at="li-at-test", linkedin_jsessionid="session-test")
         async with httpx.AsyncClient(transport=httpx.MockTransport(fail_if_called)) as http_client:
-            client = AuthenticatedLinkedInClient(http_client, settings)
+            client = LinkedInVoyagerClient(LinkedInSession(http_client, settings))
             with pytest.raises(ValueError):
                 await client.get_job_details(job_id)
 
@@ -77,7 +77,7 @@ def test_get_job_details_rejects_unicode_decimal_id(job_id: str) -> None:
     [
         (401, LinkedInAuthenticationError),
         (403, LinkedInAuthenticationError),
-        (404, LinkedInJobNotFoundError),
+        (404, VoyagerNotFoundError),
         (429, LinkedInServiceUnavailableError),
         (503, LinkedInServiceUnavailableError),
     ],
@@ -94,7 +94,7 @@ def test_get_job_details_maps_upstream_status(
     async def call_client() -> None:
         settings = Settings(linkedin_li_at="li-at-test", linkedin_jsessionid="session-test")
         async with httpx.AsyncClient(transport=httpx.MockTransport(return_status)) as http_client:
-            client = AuthenticatedLinkedInClient(http_client, settings)
+            client = LinkedInVoyagerClient(LinkedInSession(http_client, settings))
             with pytest.raises(error_type):
                 await client.get_job_details(JOB_ID)
 
@@ -109,9 +109,8 @@ def test_get_job_details_requires_credentials_before_request() -> None:
 
     async def call_client() -> None:
         async with httpx.AsyncClient(transport=httpx.MockTransport(fail_if_called)) as http_client:
-            client = AuthenticatedLinkedInClient(
-                http_client,
-                Settings(linkedin_li_at="", linkedin_jsessionid=""),
+            client = LinkedInVoyagerClient(
+                LinkedInSession(http_client, Settings(linkedin_li_at="", linkedin_jsessionid="")),
             )
             with pytest.raises(LinkedInCredentialsError, match="authentication cookies"):
                 await client.get_job_details(JOB_ID)
@@ -138,7 +137,7 @@ def test_get_job_details_maps_network_errors(
     async def call_client() -> None:
         settings = Settings(linkedin_li_at="li-at-test", linkedin_jsessionid="session-test")
         async with httpx.AsyncClient(transport=httpx.MockTransport(fail_request)) as http_client:
-            client = AuthenticatedLinkedInClient(http_client, settings)
+            client = LinkedInVoyagerClient(LinkedInSession(http_client, settings))
             with pytest.raises(expected_error):
                 await client.get_job_details(JOB_ID)
 
@@ -172,7 +171,7 @@ def test_get_job_details_rejects_invalid_upstream_responses(
     async def call_client() -> None:
         settings = Settings(linkedin_li_at="li-at-test", linkedin_jsessionid="session-test")
         async with httpx.AsyncClient(transport=httpx.MockTransport(return_response)) as http_client:
-            client = AuthenticatedLinkedInClient(http_client, settings)
+            client = LinkedInVoyagerClient(LinkedInSession(http_client, settings))
             with pytest.raises(LinkedInResponseError):
                 await client.get_job_details(JOB_ID)
 
@@ -190,7 +189,7 @@ def test_get_job_details_logs_status_and_duration(caplog) -> None:
         async with httpx.AsyncClient(
             transport=httpx.MockTransport(return_rate_limit)
         ) as http_client:
-            client = AuthenticatedLinkedInClient(http_client, settings)
+            client = LinkedInVoyagerClient(LinkedInSession(http_client, settings))
             with pytest.raises(LinkedInServiceUnavailableError):
                 await client.get_job_details(JOB_ID)
 

@@ -5,14 +5,14 @@ from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
-from app.clients.authenticated_client import (
-    AuthenticatedLinkedInClient,
+from app.clients.linkedin_html_client import LinkedInHtmlClient
+from app.clients.linkedin_session import (
     LinkedInAuthenticationError,
     LinkedInCredentialsError,
     LinkedInResponseError,
     LinkedInTimeoutError,
 )
-from app.core.dependencies import get_authenticated_linkedin_client
+from app.core.dependencies import get_linkedin_html_client
 from app.parsers.linkedin_jobs import HTMLStructureError
 from app.schemas.jobs import JobSearchResponse
 from app.services.job_search import JobSearchService
@@ -24,8 +24,8 @@ router = APIRouter(prefix="/jobs", tags=["jobs"])
 @router.get("/search", response_model=JobSearchResponse)
 async def search_jobs(
     linkedin_client: Annotated[
-        AuthenticatedLinkedInClient,
-        Depends(get_authenticated_linkedin_client),
+        LinkedInHtmlClient,
+        Depends(get_linkedin_html_client),
     ],
     keywords: str | None = Query(None, min_length=1),
     company_id: str | None = Query(None, pattern=r"^[0-9]+$"),

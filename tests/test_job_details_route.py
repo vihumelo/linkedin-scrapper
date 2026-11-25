@@ -7,15 +7,15 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
-from app.clients.authenticated_client import (
+from app.clients.linkedin_session import (
     LinkedInAuthenticationError,
     LinkedInCredentialsError,
-    LinkedInJobNotFoundError,
     LinkedInResponseError,
     LinkedInServiceUnavailableError,
     LinkedInTimeoutError,
 )
-from app.core.dependencies import get_authenticated_linkedin_client, get_job_cache
+from app.clients.linkedin_voyager_client import VoyagerNotFoundError
+from app.core.dependencies import get_job_cache, get_linkedin_voyager_client
 from app.main import create_app
 from app.parsers.linkedin_voyager_job_details import JobDetailVoyagerStructureError
 from app.schemas.jobs import JobDetail
@@ -24,7 +24,7 @@ JOB_ID = "4486249045"
 FIXTURE_PATH = Path(__file__).parent / "fixtures" / "linkedin_job_detail_voyager.json"
 
 
-class FakeAuthenticatedLinkedInClient:
+class FakeLinkedInVoyagerClient:
     """Fake client that returns a Voyager payload without making a network request."""
 
     async def get_job_details(self, job_id: str) -> dict[str, object]:
@@ -65,9 +65,7 @@ def test_get_job_details_returns_structured_json() -> None:
     """Returns validated details parsed from a Voyager JSON payload."""
 
     app = create_app()
-    app.dependency_overrides[get_authenticated_linkedin_client] = lambda: (
-        FakeAuthenticatedLinkedInClient()
-    )
+    app.dependency_overrides[get_linkedin_voyager_client] = lambda: FakeLinkedInVoyagerClient()
     app.dependency_overrides[get_job_cache] = lambda: FakeJobCache()
 
     with TestClient(app) as client:
@@ -105,9 +103,7 @@ def test_get_job_details_marks_cache_hit() -> None:
     )
     cache = FakeJobCache(cached_job)
     app = create_app()
-    app.dependency_overrides[get_authenticated_linkedin_client] = lambda: (
-        FakeAuthenticatedLinkedInClient()
-    )
+    app.dependency_overrides[get_linkedin_voyager_client] = lambda: FakeLinkedInVoyagerClient()
     app.dependency_overrides[get_job_cache] = lambda: cache
 
     with TestClient(app) as client:
@@ -132,9 +128,7 @@ def test_refresh_query_bypasses_cached_job() -> None:
         )
     )
     app = create_app()
-    app.dependency_overrides[get_authenticated_linkedin_client] = lambda: (
-        FakeAuthenticatedLinkedInClient()
-    )
+    app.dependency_overrides[get_linkedin_voyager_client] = lambda: FakeLinkedInVoyagerClient()
     app.dependency_overrides[get_job_cache] = lambda: cache
 
     with TestClient(app) as client:
@@ -151,9 +145,7 @@ def test_get_job_details_rejects_non_numeric_id() -> None:
     """Returns 422 when the job ID contains anything other than digits."""
 
     app = create_app()
-    app.dependency_overrides[get_authenticated_linkedin_client] = lambda: (
-        FakeAuthenticatedLinkedInClient()
-    )
+    app.dependency_overrides[get_linkedin_voyager_client] = lambda: FakeLinkedInVoyagerClient()
     app.dependency_overrides[get_job_cache] = lambda: FakeJobCache()
 
     with TestClient(app) as client:
@@ -167,9 +159,7 @@ def test_get_job_details_rejects_unicode_decimal_id(job_id: str) -> None:
     """Rejects Unicode digits because LinkedIn IDs use ASCII digits."""
 
     app = create_app()
-    app.dependency_overrides[get_authenticated_linkedin_client] = lambda: (
-        FakeAuthenticatedLinkedInClient()
-    )
+    app.dependency_overrides[get_linkedin_voyager_client] = lambda: FakeLinkedInVoyagerClient()
     app.dependency_overrides[get_job_cache] = lambda: FakeJobCache()
 
     with TestClient(app) as client:
@@ -181,7 +171,7 @@ def test_get_job_details_rejects_unicode_decimal_id(job_id: str) -> None:
 @pytest.mark.parametrize(
     ("upstream_error", "expected_status"),
     [
-        (LinkedInJobNotFoundError("not found"), 404),
+        (VoyagerNotFoundError("not found"), 404),
         (LinkedInCredentialsError("missing credentials"), 503),
         (LinkedInServiceUnavailableError("unavailable"), 503),
         (LinkedInTimeoutError("timed out"), 504),
@@ -201,7 +191,7 @@ def test_get_job_details_maps_upstream_errors(
             raise upstream_error
 
     app = create_app()
-    app.dependency_overrides[get_authenticated_linkedin_client] = lambda: FailingClient()
+    app.dependency_overrides[get_linkedin_voyager_client] = lambda: FailingClient()
     app.dependency_overrides[get_job_cache] = lambda: FakeJobCache()
 
     with TestClient(app) as client:

@@ -11,10 +11,9 @@ from starlette.middleware.base import RequestResponseEndpoint
 
 from app.api.routes.job import router as job_router
 from app.api.routes.jobs import router as jobs_router
-from app.clients.authenticated_client import (
-    AuthenticatedLinkedInClient,
-    create_authenticated_http_client,
-)
+from app.clients.linkedin_html_client import LinkedInHtmlClient
+from app.clients.linkedin_session import LinkedInSession, create_authenticated_http_client
+from app.clients.linkedin_voyager_client import LinkedInVoyagerClient
 from app.core.config import get_settings
 from app.core.dependencies import create_job_cache
 from app.core.observability import REQUEST_ID_CONTEXT, choose_request_id, configure_logging
@@ -24,15 +23,14 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(application: FastAPI) -> AsyncGenerator[None, None]:
-    """Creates and closes the reusable HTTP session for the LinkedIn integration."""
+    """Creates and closes the reusable HTTP session shared by the LinkedIn clients."""
 
     settings = get_settings()
     application.state.job_cache = create_job_cache(settings)
     authenticated_http_client = create_authenticated_http_client(settings)
-    application.state.authenticated_linkedin_client = AuthenticatedLinkedInClient(
-        authenticated_http_client,
-        settings,
-    )
+    session = LinkedInSession(authenticated_http_client, settings)
+    application.state.linkedin_html_client = LinkedInHtmlClient(session)
+    application.state.linkedin_voyager_client = LinkedInVoyagerClient(session)
     try:
         yield
     finally:

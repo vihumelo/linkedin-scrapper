@@ -2,7 +2,7 @@
 
 from typing import Literal
 
-from app.clients.authenticated_client import AuthenticatedLinkedInClient
+from app.clients.linkedin_html_client import LinkedInHtmlClient
 from app.parsers.linkedin_jobs import parse_job_search_html
 from app.schemas.jobs import (
     JobPagination,
@@ -14,7 +14,7 @@ from app.schemas.jobs import (
 class JobSearchService:
     """Coordinates the external search, parsing, and response construction."""
 
-    def __init__(self, linkedin_client: AuthenticatedLinkedInClient) -> None:
+    def __init__(self, linkedin_client: LinkedInHtmlClient) -> None:
         """Stores the client used to query LinkedIn."""
 
         self._linkedin_client = linkedin_client

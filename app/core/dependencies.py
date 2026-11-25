@@ -3,7 +3,8 @@
 from fastapi import Request
 
 from app.adapters.cache.sqlite import SQLiteJobCache
-from app.clients.authenticated_client import AuthenticatedLinkedInClient
+from app.clients.linkedin_html_client import LinkedInHtmlClient
+from app.clients.linkedin_voyager_client import LinkedInVoyagerClient
 from app.core.config import Settings
 from app.ports.job_cache import JobCache
 
@@ -23,7 +24,13 @@ def get_job_cache(request: Request) -> JobCache:
     return request.app.state.job_cache
 
 
-def get_authenticated_linkedin_client(request: Request) -> AuthenticatedLinkedInClient:
-    """Returns the shared authenticated session created during the application lifecycle."""
+def get_linkedin_html_client(request: Request) -> LinkedInHtmlClient:
+    """Returns the shared HTML client created during the application lifecycle."""
 
-    return request.app.state.authenticated_linkedin_client
+    return request.app.state.linkedin_html_client
+
+
+def get_linkedin_voyager_client(request: Request) -> LinkedInVoyagerClient:
+    """Returns the shared Voyager client created during the application lifecycle."""
+
+    return request.app.state.linkedin_voyager_client

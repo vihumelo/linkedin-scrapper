@@ -5,7 +5,7 @@ import re
 
 from fastapi.testclient import TestClient
 
-from app.core.dependencies import get_authenticated_linkedin_client
+from app.core.dependencies import get_linkedin_html_client
 from app.main import create_app
 
 
@@ -22,9 +22,7 @@ def test_request_id_is_returned_and_logged_without_query_values(caplog) -> None:
     """Correlates the response with the log and records only the route template."""
 
     app = create_app()
-    app.dependency_overrides[get_authenticated_linkedin_client] = lambda: (
-        FailingAuthenticatedClient()
-    )
+    app.dependency_overrides[get_linkedin_html_client] = lambda: FailingAuthenticatedClient()
 
     with caplog.at_level(logging.INFO), TestClient(app) as client:
         response = client.get(

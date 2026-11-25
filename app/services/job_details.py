@@ -2,7 +2,7 @@
 
 import logging
 
-from app.clients.authenticated_client import AuthenticatedLinkedInClient
+from app.clients.linkedin_voyager_client import LinkedInVoyagerClient, VoyagerNotFoundError
 from app.parsers.linkedin_voyager_job_details import parse_job_detail_voyager
 from app.ports.job_cache import JobCache, JobCacheError
 from app.schemas.jobs import JobDetail, JobDetailResponse
@@ -10,11 +10,15 @@ from app.schemas.jobs import JobDetail, JobDetailResponse
 logger = logging.getLogger(__name__)
 
 
+class JobNotFoundError(Exception):
+    """Indicates that the requested job does not exist or is no longer available."""
+
+
 class JobDetailService:
     """Coordinates the authenticated request, parsing, and response construction."""
 
-    def __init__(self, linkedin_client: AuthenticatedLinkedInClient, cache: JobCache) -> None:
-        """Stores the injected authenticated client and cache port."""
+    def __init__(self, linkedin_client: LinkedInVoyagerClient, cache: JobCache) -> None:
+        """Stores the injected Voyager client and cache port."""
 
         self._linkedin_client = linkedin_client
         self._cache = cache
@@ -54,7 +58,10 @@ class JobDetailService:
                 extra={"event": "cache.lookup", "result": "bypassed", "reason": "refresh"},
             )
 
-        payload = await self._linkedin_client.get_job_details(job_id)
+        try:
+            payload = await self._linkedin_client.get_job_details(job_id)
+        except VoyagerNotFoundError as exc:
+            raise JobNotFoundError("The job does not exist or is no longer available.") from exc
         job = parse_job_detail_voyager(payload, job_id)
         if _is_cacheable(job):
             try:

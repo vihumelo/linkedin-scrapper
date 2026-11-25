@@ -3,18 +3,18 @@
 import pytest
 from fastapi.testclient import TestClient
 
-from app.clients.authenticated_client import (
+from app.clients.linkedin_session import (
     LinkedInAuthenticationError,
     LinkedInCredentialsError,
     LinkedInResponseError,
     LinkedInTimeoutError,
 )
-from app.core.dependencies import get_authenticated_linkedin_client
+from app.core.dependencies import get_linkedin_html_client
 from app.main import create_app
 from app.parsers.linkedin_jobs import HTMLStructureError
 
 
-class FakeAuthenticatedLinkedInClient:
+class FakeLinkedInHtmlClient:
     """Fake client with a static results page."""
 
     async def search_jobs(self, keywords: str, geo_id: str, f_tpr: str, start: int) -> str:
@@ -65,9 +65,9 @@ class CapturingSearchClient:
 def test_search_jobs_response_contract() -> None:
     """Returns the query, pagination, and jobs without exposing HTML."""
 
-    fake_client = FakeAuthenticatedLinkedInClient()
+    fake_client = FakeLinkedInHtmlClient()
     app = create_app()
-    app.dependency_overrides[get_authenticated_linkedin_client] = lambda: fake_client
+    app.dependency_overrides[get_linkedin_html_client] = lambda: fake_client
 
     with TestClient(app) as client:
         response = client.get("/api/jobs/search", params={"keywords": "biomedical science"})
@@ -95,7 +95,7 @@ def test_search_jobs_by_company_without_keyword() -> None:
 
     fake_client = CapturingSearchClient()
     app = create_app()
-    app.dependency_overrides[get_authenticated_linkedin_client] = lambda: fake_client
+    app.dependency_overrides[get_linkedin_html_client] = lambda: fake_client
 
     with TestClient(app) as client:
         response = client.get("/api/jobs/search", params={"company_id": "1185"})
@@ -117,7 +117,7 @@ def test_search_jobs_combines_keyword_and_company_id() -> None:
 
     fake_client = CapturingSearchClient()
     app = create_app()
-    app.dependency_overrides[get_authenticated_linkedin_client] = lambda: fake_client
+    app.dependency_overrides[get_linkedin_html_client] = lambda: fake_client
 
     with TestClient(app) as client:
         response = client.get(
@@ -135,9 +135,7 @@ def test_search_jobs_requires_keyword_or_company_id() -> None:
     """Rejects searches that provide neither a keyword nor a company ID."""
 
     app = create_app()
-    app.dependency_overrides[get_authenticated_linkedin_client] = lambda: (
-        FakeAuthenticatedLinkedInClient()
-    )
+    app.dependency_overrides[get_linkedin_html_client] = lambda: FakeLinkedInHtmlClient()
 
     with TestClient(app) as client:
         response = client.get("/api/jobs/search")
@@ -150,7 +148,7 @@ def test_search_jobs_rejects_non_numeric_company_id() -> None:
 
     fake_client = CapturingSearchClient()
     app = create_app()
-    app.dependency_overrides[get_authenticated_linkedin_client] = lambda: fake_client
+    app.dependency_overrides[get_linkedin_html_client] = lambda: fake_client
 
     with TestClient(app) as client:
         response = client.get(
@@ -187,7 +185,7 @@ def test_search_jobs_accepts_linkedin_location_and_time_filter(f_tpr: str) -> No
             """
 
     app = create_app()
-    app.dependency_overrides[get_authenticated_linkedin_client] = lambda: FilteredClient()
+    app.dependency_overrides[get_linkedin_html_client] = lambda: FilteredClient()
 
     with TestClient(app) as client:
         response = client.get(
@@ -213,9 +211,7 @@ def test_search_jobs_rejects_unsupported_time_filter() -> None:
     """Accepts only LinkedIn's supported 24-hour, week, and month filters."""
 
     app = create_app()
-    app.dependency_overrides[get_authenticated_linkedin_client] = lambda: (
-        FakeAuthenticatedLinkedInClient()
-    )
+    app.dependency_overrides[get_linkedin_html_client] = lambda: FakeLinkedInHtmlClient()
 
     with TestClient(app) as client:
         response = client.get(
@@ -230,9 +226,7 @@ def test_search_jobs_rejects_negative_start() -> None:
     """Validates that the pagination offset is non-negative."""
 
     app = create_app()
-    app.dependency_overrides[get_authenticated_linkedin_client] = lambda: (
-        FakeAuthenticatedLinkedInClient()
-    )
+    app.dependency_overrides[get_linkedin_html_client] = lambda: FakeLinkedInHtmlClient()
 
     with TestClient(app) as client:
         response = client.get(
@@ -264,7 +258,7 @@ def test_search_jobs_maps_upstream_errors(
             raise upstream_error
 
     app = create_app()
-    app.dependency_overrides[get_authenticated_linkedin_client] = lambda: FailingClient()
+    app.dependency_overrides[get_linkedin_html_client] = lambda: FailingClient()
 
     with TestClient(app) as client:
         response = client.get("/api/jobs/search", params={"keywords": "biomedical science"})
